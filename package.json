@@ -45,10 +45,15 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/piapi.credentials.js"
+      "dist/credentials/PiAPI.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/PiAPI/PiAPI.node.js"
+      "dist/nodes/PiAPI/Flux/FluxTextToImage.node.js",
+      "dist/nodes/PiAPI/Flux/FluxImageToImage.node.js",
+      "dist/nodes/PiAPI/TaskStatus/PiAPITaskStatus.node.js",
+      "dist/nodes/PiAPI/DreamMachine/DreamMachineTextToVideo.node.js",
+      "dist/nodes/PiAPI/DreamMachine/DreamMachineImageToVideo.node.js",
+      "dist/nodes/PiAPI/DreamMachine/DreamMachineExtendVideo.node.js"
     ]
   },
   "devDependencies": {
