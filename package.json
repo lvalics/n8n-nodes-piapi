@@ -53,7 +53,9 @@
       "dist/nodes/PiAPI/TaskStatus/PiAPITaskStatus.node.js",
       "dist/nodes/PiAPI/DreamMachine/DreamMachineTextToVideo.node.js",
       "dist/nodes/PiAPI/DreamMachine/DreamMachineImageToVideo.node.js",
-      "dist/nodes/PiAPI/DreamMachine/DreamMachineExtendVideo.node.js"
+      "dist/nodes/PiAPI/DreamMachine/DreamMachineExtendVideo.node.js",
+      "dist/nodes/PiAPI/WanX/WanXTextToVideo.node.js",
+      "dist/nodes/PiAPI/WanX/WanXImageToVideo.node.js"
     ]
   },
   "devDependencies": {

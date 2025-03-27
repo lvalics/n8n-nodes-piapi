@@ -247,3 +247,24 @@ export const LORA_OPTIONS = [
     description: 'Paper quilling and layering style LoRA',
   },
 ];
+
+export const WANX_MODELS = [
+  {
+    name: 'Lightweight (1.3B)',
+    value: 'txt2video-1.3b',
+    description: 'Lightweight text-to-video generation model ($0.12 per generation)',
+    price: 0.12,
+  },
+  {
+    name: 'Advanced (14B)',
+    value: 'txt2video-14b',
+    description: 'Advanced text-to-video generation model ($0.28 per generation)',
+    price: 0.28,
+  },
+  {
+    name: 'Image to Video (14B)',
+    value: 'img2video-14b',
+    description: 'Image-to-video transformation model ($0.28 per generation)',
+    price: 0.28,
+  },
+];

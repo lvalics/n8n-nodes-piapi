@@ -7,17 +7,18 @@ import {
 } from 'n8n-workflow';
 
 import { piApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
+import { WANX_MODELS } from '../shared/Constants';
 
-export class DreamMachineImageToVideo implements INodeType {
+export class WanXImageToVideo implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PiAPI Dream Machine Image to Video',
-		name: 'dreamMachineImageToVideo',
+		displayName: 'PiAPI WanX Image to Video',
+		name: 'wanXImageToVideo',
 		icon: 'file:../piapi.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Generate videos from images using PiAPI Dream Machine',
+		description: 'Generate videos from images using PiAPI WanX',
 		defaults: {
-			name: 'Dream Machine Image to Video',
+			name: 'WanX Image to Video',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
@@ -38,6 +39,24 @@ export class DreamMachineImageToVideo implements INodeType {
 				default: '',
 				required: true,
 				description: 'Descriptive prompt for video generation',
+			},
+			{
+				displayName: 'Negative Prompt',
+				name: 'negativePrompt',
+				type: 'string',
+				typeOptions: {
+					rows: 2,
+				},
+				default: '',
+				description: 'Things to exclude from the video generation',
+			},
+			{
+				displayName: 'Model',
+				name: 'model',
+				type: 'options',
+				options: WANX_MODELS.filter(model => model.value === 'img2video-14b'),
+				default: 'img2video-14b',
+				description: 'The WanX model to use for image-to-video generation',
 			},
 			{
 				displayName: 'Image Source',
@@ -67,7 +86,7 @@ export class DreamMachineImageToVideo implements INodeType {
 						imageSource: ['url'],
 					},
 				},
-				description: 'URL of the image to transform into video',
+				description: 'Direct URL to the image (must be a publicly accessible image file)',
 			},
 			{
 				displayName: 'Binary Property',
@@ -83,105 +102,21 @@ export class DreamMachineImageToVideo implements INodeType {
 				description: 'Name of the binary property containing the image data',
 			},
 			{
-				displayName: 'Frame Position',
-				name: 'framePosition',
-				type: 'options',
-				options: [
-					{
-						name: 'First Frame (frame0)',
-						value: 'frame0',
-					},
-					{
-						name: 'Last Frame (frame1)',
-						value: 'frame1',
-					},
-				],
-				default: 'frame0',
-				description: 'Position of the image in the video sequence',
-			},
-			{
-				displayName: 'Model Name',
-				name: 'modelName',
-				type: 'options',
-				options: [
-					{
-						name: 'Ray v1',
-						value: 'ray-v1',
-					},
-					{
-						name: 'Ray v2',
-						value: 'ray-v2',
-					},
-				],
-				default: 'ray-v1',
-				description: 'The model to use for video generation',
-			},
-			{
-				displayName: 'Duration',
-				name: 'duration',
-				type: 'options',
-				options: [
-					{
-						name: '5 seconds',
-						value: 5,
-					},
-				],
-				default: 5,
-				description: 'Duration of the generated video in seconds',
-			},
-			{
 				displayName: 'Aspect Ratio',
 				name: 'aspectRatio',
 				type: 'options',
 				options: [
 					{
-						name: 'Portrait (9:16)',
-						value: '9:16',
-					},
-					{
-						name: 'Portrait (3:4)',
-						value: '3:4',
-					},
-					{
-						name: 'Square (1:1)',
-						value: '1:1',
-					},
-					{
-						name: 'Landscape (4:3)',
-						value: '4:3',
-					},
-					{
 						name: 'Landscape (16:9)',
 						value: '16:9',
 					},
 					{
-						name: 'Cinematic (21:9)',
-						value: '21:9',
-					},
+						name: 'Portrait (9:16)',
+						value: '9:16',
+					}
 				],
 				default: '16:9',
 				description: 'Aspect ratio of the generated video',
-			},
-			{
-				displayName: 'Service Mode',
-				name: 'serviceMode',
-				type: 'options',
-				options: [
-					{
-						name: 'Default (User Workspace Setting)',
-						value: '',
-					},
-					{
-						name: 'Pay-as-you-go (PAYG)',
-						value: 'public',
-					},
-					{
-						name: 'Host-your-account (HYA)',
-						value: 'private',
-					},
-				],
-				default: '',
-				description: 'The service mode for processing the task',
 			},
 			{
 				displayName: 'Wait for Completion',
@@ -199,58 +134,80 @@ export class DreamMachineImageToVideo implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			const prompt = this.getNodeParameter('prompt', i) as string;
-			const modelName = this.getNodeParameter('modelName', i) as string;
-			const duration = this.getNodeParameter('duration', i) as number;
+			const negativePrompt = this.getNodeParameter('negativePrompt', i, '') as string;
+			const model = this.getNodeParameter('model', i, 'img2video-14b') as string;
 			const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
-			const serviceMode = this.getNodeParameter('serviceMode', i) as string;
-			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, true) as boolean;
+			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, false) as boolean;
 			const imageSource = this.getNodeParameter('imageSource', i) as string;
-			const framePosition = this.getNodeParameter('framePosition', i) as string;
 
-			let imageUrl = '';
+			let imageBase64 = '';
 
+			// Get image from source
 			if (imageSource === 'url') {
-				imageUrl = this.getNodeParameter('imageUrl', i) as string;
+				const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+				
+				// Validate URL
+				try {
+					new URL(imageUrl);
+					
+					// Download the image first instead of passing the URL directly
+					const imageResponse = await this.helpers.request({
+						method: 'GET',
+						url: imageUrl,
+						encoding: null,
+						resolveWithFullResponse: true,
+					});
+					
+					// Convert to base64
+					const buffer = Buffer.from(imageResponse.body as Buffer);
+					const contentType = imageResponse.headers['content-type'] || 'image/png';
+					imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+				} catch (error) {
+					throw new Error(`Failed to download image from URL: ${error.message}`);
+				}
 			} else {
-				// Binary data
+				// Binary data handling
 				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-
+				
+				// Check MIME type
 				if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
-					throw new Error('The provided binary data is not an image');
+					throw new Error('The provided binary data is not an image. Please provide valid image data.');
 				}
-
-				// If we have binary data URL, use it
+				
 				if (binaryData.data) {
-					const dataBuffer = Buffer.from(binaryData.data, 'base64');
-
-					// Upload to temporary storage or convert to base64 URL
-					imageUrl = `data:${binaryData.mimeType};base64,${dataBuffer.toString('base64')}`;
+					// Directly use the binary data
+					imageBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
 				} else if (binaryData.url) {
-					imageUrl = binaryData.url as string;
+					// If we have a URL in binary data, download it
+					try {
+						const imageResponse = await this.helpers.request({
+							method: 'GET',
+							url: binaryData.url as string,
+							encoding: null,
+							resolveWithFullResponse: true,
+						});
+						
+						const buffer = Buffer.from(imageResponse.body as Buffer);
+						const contentType = imageResponse.headers['content-type'] || 'image/png';
+						imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+					} catch (error) {
+						throw new Error(`Failed to download image from binary URL: ${error.message}`);
+					}
 				} else {
-					throw new Error('No usable image data found in the provided binary property');
+					throw new Error('Could not extract image from binary data. Missing URL or data.');
 				}
 			}
 
-			const keyFrames: any = {};
-			keyFrames[framePosition] = {
-				type: 'image',
-				url: imageUrl,
-			};
-
 			const body = {
-				model: 'luma',
-				task_type: 'video_generation',
+				model: 'Qubico/wanx',
+				task_type: model,
 				input: {
 					prompt,
-					key_frames: keyFrames,
-					model_name: modelName,
-					duration,
+					negative_prompt: negativePrompt,
+					image: imageBase64,
 					aspect_ratio: aspectRatio,
-				},
-				config: {
-					service_mode: serviceMode,
+					video_resolution: '480P',
 				},
 			};
 

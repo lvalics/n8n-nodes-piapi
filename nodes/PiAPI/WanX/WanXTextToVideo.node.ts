@@ -7,17 +7,18 @@ import {
 } from 'n8n-workflow';
 
 import { piApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
+import { WANX_MODELS } from '../shared/Constants';
 
-export class DreamMachineTextToVideo implements INodeType {
+export class WanXTextToVideo implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'PiAPI Dream Machine Text to Video',
-		name: 'dreamMachineTextToVideo',
+		displayName: 'PiAPI WanX Text to Video',
+		name: 'wanXTextToVideo',
 		icon: 'file:../piapi.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Generate videos using PiAPI Dream Machine Text-to-Video',
+		description: 'Generate videos from text using PiAPI WanX',
 		defaults: {
-			name: 'Dream Machine Text to Video',
+			name: 'WanX Text to Video',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
@@ -40,39 +41,22 @@ export class DreamMachineTextToVideo implements INodeType {
 				description: 'Descriptive prompt for video generation',
 			},
 			{
-				displayName: 'Model Name',
-				name: 'modelName',
-				type: 'options',
-				options: [
-					{
-						name: 'Ray v1',
-						value: 'ray-v1',
-					},
-					{
-						name: 'Ray v2',
-						value: 'ray-v2',
-					},
-				],
-				default: 'ray-v1',
-				description: 'The model to use for video generation',
+				displayName: 'Negative Prompt',
+				name: 'negativePrompt',
+				type: 'string',
+				typeOptions: {
+					rows: 2,
+				},
+				default: '',
+				description: 'Things to exclude from the video generation',
 			},
 			{
-				displayName: 'Duration',
-				name: 'duration',
+				displayName: 'Model',
+				name: 'model',
 				type: 'options',
-				options: [
-					{
-						name: '5 seconds',
-						value: 5,
-					},
-					{
-						name: '10 seconds',
-						value: 10,
-						description: 'Only available for text-to-video',
-					},
-				],
-				default: 5,
-				description: 'Duration of the generated video in seconds',
+				options: WANX_MODELS.filter(model => model.value.includes('txt2video')),
+				default: 'txt2video-1.3b',
+				description: 'The WanX model to use for video generation',
 			},
 			{
 				displayName: 'Aspect Ratio',
@@ -80,59 +64,22 @@ export class DreamMachineTextToVideo implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'Portrait (9:16)',
-						value: '9:16',
-					},
-					{
-						name: 'Portrait (3:4)',
-						value: '3:4',
-					},
-					{
-						name: 'Square (1:1)',
-						value: '1:1',
-					},
-					{
-						name: 'Landscape (4:3)',
-						value: '4:3',
-					},
-					{
 						name: 'Landscape (16:9)',
 						value: '16:9',
 					},
 					{
-						name: 'Cinematic (21:9)',
-						value: '21:9',
-					},
+						name: 'Portrait (9:16)',
+						value: '9:16',
+					}
 				],
 				default: '16:9',
 				description: 'Aspect ratio of the generated video',
 			},
 			{
-				displayName: 'Service Mode',
-				name: 'serviceMode',
-				type: 'options',
-				options: [
-					{
-						name: 'Default (User Workspace Setting)',
-						value: '',
-					},
-					{
-						name: 'Pay-as-you-go (PAYG)',
-						value: 'public',
-					},
-					{
-						name: 'Host-your-account (HYA)',
-						value: 'private',
-					},
-				],
-				default: '',
-				description: 'The service mode for processing the task',
-			},
-			{
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: false,
+				default: true,
 				description: 'Wait for task to complete and return results',
 			},
 		],
@@ -144,23 +91,19 @@ export class DreamMachineTextToVideo implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			const prompt = this.getNodeParameter('prompt', i) as string;
-			const modelName = this.getNodeParameter('modelName', i) as string;
-			const duration = this.getNodeParameter('duration', i) as number;
+			const negativePrompt = this.getNodeParameter('negativePrompt', i, '') as string;
+			const model = this.getNodeParameter('model', i) as string;
 			const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
-			const serviceMode = this.getNodeParameter('serviceMode', i) as string;
 			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, true) as boolean;
 
 			const body = {
-				model: 'luma',
-				task_type: 'video_generation',
+				model: 'Qubico/wanx',
+				task_type: model,
 				input: {
 					prompt,
-					model_name: modelName,
-					duration,
+					negative_prompt: negativePrompt,
 					aspect_ratio: aspectRatio,
-				},
-				config: {
-					service_mode: serviceMode,
+					video_resolution: '480P',
 				},
 			};
 

@@ -275,7 +275,7 @@ export class FluxTextToImage implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],
@@ -313,27 +313,27 @@ export class FluxTextToImage implements INodeType {
 				width = w;
 				height = h;
 			}
-			
+
 			// Get control image URL if ControlNet is being used
 			let controlImageUrl = '';
 			if (useControlNet && controlNetType !== 'none') {
 				const controlImageSource = this.getNodeParameter('controlImageSource', i) as string;
-				
+
 				if (controlImageSource === 'url') {
 					controlImageUrl = this.getNodeParameter('controlImageUrl', i) as string;
 				} else {
 					// Binary data
 					const controlBinaryPropertyName = this.getNodeParameter('controlBinaryPropertyName', i) as string;
 					const binaryData = this.helpers.assertBinaryData(i, controlBinaryPropertyName);
-					
+
 					if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
 						throw new Error('The provided binary data is not an image');
 					}
-					
+
 					// If we have binary data URL, use it
 					if (binaryData.data) {
 						const dataBuffer = Buffer.from(binaryData.data, 'base64');
-						
+
 						// Upload to temporary storage or convert to base64 URL
 						controlImageUrl = `data:${binaryData.mimeType};base64,${dataBuffer.toString('base64')}`;
 					} else if (binaryData.url) {
@@ -353,7 +353,7 @@ export class FluxTextToImage implements INodeType {
 					taskType = 'txt2img-lora';
 				}
 			}
-			
+
 			const body: any = {
 				model,
 				task_type: taskType,
@@ -366,7 +366,7 @@ export class FluxTextToImage implements INodeType {
 					batch_size: batchSize,
 				},
 			};
-			
+
 			// Add LoRA settings if using LoRA
 			if (useLora && loraType !== 'none') {
 				body.input.lora_settings = [
@@ -376,7 +376,7 @@ export class FluxTextToImage implements INodeType {
 					},
 				];
 			}
-			
+
 			// Add ControlNet settings if using ControlNet
 			if (useControlNet && controlNetType !== 'none') {
 				body.input.control_net_settings = [

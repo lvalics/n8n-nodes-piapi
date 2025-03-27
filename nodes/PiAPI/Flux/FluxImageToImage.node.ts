@@ -249,7 +249,7 @@ export class FluxImageToImage implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],
@@ -275,24 +275,24 @@ export class FluxImageToImage implements INodeType {
 			const returnPreprocessed = useControlNet ? this.getNodeParameter('returnPreprocessed', i, false) as boolean : false;
 			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, true) as boolean;
 			const imageSource = this.getNodeParameter('imageSource', i) as string;
-			
+
 			let imageUrl = '';
-			
+
 			if (imageSource === 'url') {
 				imageUrl = this.getNodeParameter('imageUrl', i) as string;
 			} else {
 				// Binary data
 				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-				
+
 				if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
 					throw new Error('The provided binary data is not an image');
 				}
-				
+
 				// If we have binary data URL, use it
 				if (binaryData.data) {
 					const dataBuffer = Buffer.from(binaryData.data, 'base64');
-					
+
 					// Upload to temporary storage or convert to base64 URL
 					// For this example, we'll assume the API supports base64 data URLs
 					imageUrl = `data:${binaryData.mimeType};base64,${dataBuffer.toString('base64')}`;
@@ -312,7 +312,7 @@ export class FluxImageToImage implements INodeType {
 					taskType = 'img2img-lora';
 				}
 			}
-			
+
 			const body: any = {
 				model,
 				task_type: taskType,
@@ -325,7 +325,7 @@ export class FluxImageToImage implements INodeType {
 					batch_size: batchSize,
 				},
 			};
-			
+
 			// Add LoRA settings if using LoRA
 			if (useLora && loraType !== 'none') {
 				body.input.lora_settings = [
@@ -335,7 +335,7 @@ export class FluxImageToImage implements INodeType {
 					},
 				];
 			}
-			
+
 			// Add ControlNet settings if using ControlNet
 			if (useControlNet && controlNetType !== 'none') {
 				body.input.control_net_settings = [

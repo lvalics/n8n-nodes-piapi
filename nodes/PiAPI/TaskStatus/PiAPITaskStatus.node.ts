@@ -37,7 +37,7 @@ export class PiAPITaskStatus implements INodeType {
 				description: 'The ID of the task to check',
 			},
 			{
-				displayName: 'Return Only Image URL',
+				displayName: 'Return Only Image/Video URL',
 				name: 'returnOnlyImageUrl',
 				type: 'boolean',
 				default: false,
@@ -48,7 +48,7 @@ export class PiAPITaskStatus implements INodeType {
 				name: 'returnBinaryData',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to return the image as binary data',
+				description: 'Whether to return the Image/Video as binary data',
 			},
 			{
 				displayName: 'Binary Property',

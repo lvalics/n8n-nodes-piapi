@@ -157,7 +157,7 @@ export class DreamMachineExtendVideo implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],
