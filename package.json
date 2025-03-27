@@ -48,7 +48,7 @@
       "dist/credentials/piapi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/piapi/piapi.node.js"
+      "dist/nodes/PiAPI/PiAPI.node.js"
     ]
   },
   "devDependencies": {
