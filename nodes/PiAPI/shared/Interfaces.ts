@@ -102,3 +102,12 @@ export interface SkyreelsImageToVideoParams {
     aspect_ratio?: string; // "16:9", "9:16", "1:1"
     guidance_scale?: number; // 0.1 to 10
 }
+
+export interface Trellis3DModelParams {
+    image: string; // Base64 or URL of the input image
+    seed?: number;
+    ss_sampling_steps?: number; // 10-50
+    slat_sampling_steps?: number; // 10-50
+    ss_guidance_strength?: number; // 0-10
+    slat_guidance_strength?: number; // 0-10
+}
