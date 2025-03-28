@@ -94,3 +94,11 @@ export interface HailuoSubjectVideoParams extends HailuoBaseParams {
     prompt: string; // Required for subject reference video
     image_url: string; // Required for subject reference video, must contain detectable human face
 }
+
+export interface SkyreelsImageToVideoParams {
+    prompt: string;
+    negative_prompt?: string;
+    image: string; // Base64 encoded image or URL
+    aspect_ratio?: string; // "16:9", "9:16", "1:1"
+    guidance_scale?: number; // 0.1 to 10
+}
