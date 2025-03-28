@@ -35,3 +35,40 @@ export interface FluxTaskResponse {
 		};
 	};
 }
+
+export interface KlingTextToVideoParams {
+	prompt: string;
+	negative_prompt?: string;
+	duration: number;
+	aspect_ratio: string;
+	mode: string;
+	version: string;
+	cfg_scale: number;
+}
+
+export interface KlingImageToVideoParams extends KlingTextToVideoParams {
+	image_url?: string;
+	image_tail_url?: string;
+	elements?: Array<{ image_url: string }>;
+}
+
+export interface KlingLipSyncParams {
+	origin_task_id: string;
+	tts_text?: string;
+	tts_timbre?: string;
+	tts_speed?: number;
+	local_dubbing_url?: string;
+}
+
+export interface KlingEffectsParams {
+	image_url: string;
+	effect: string;
+}
+
+export interface KlingTryOnParams {
+	model_input: string;
+	dress_input?: string;
+	upper_input?: string;
+	lower_input?: string;
+	batch_size?: number;
+}
