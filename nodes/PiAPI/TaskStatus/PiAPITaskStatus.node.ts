@@ -37,11 +37,11 @@ export class PiAPITaskStatus implements INodeType {
 				description: 'The ID of the task to check',
 			},
 			{
-				displayName: 'Return Only Image/Video URL',
+				displayName: 'Return Only Media URL',
 				name: 'returnOnlyImageUrl',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to return only the image URL instead of the full task data',
+				description: 'Whether to return only the image/video URL instead of the full task data',
 			},
 			{
 				displayName: 'Return Binary Data',
@@ -82,15 +82,19 @@ export class PiAPITaskStatus implements INodeType {
 				// Get task status
 				const response = await piApiRequest.call(this, 'GET', `/api/v1/task/${taskId}`);
 
-				if (returnOnlyImageUrl && response.data?.output?.image_url) {
+				// Handle both image_url and video_url in the output
+				const mediaUrl = response.data?.output?.image_url || response.data?.output?.video_url;
+				
+				if (returnOnlyImageUrl && mediaUrl) {
 					returnData.push({
 						json: {
-							imageUrl: response.data.output.image_url,
+							mediaUrl,
+							type: response.data?.output?.image_url ? 'image' : 'video',
 						},
 					});
-				} else if (returnBinaryData && response.data?.output?.image_url) {
-					// Download the image and return as binary data
-					const imageUrl = response.data.output.image_url;
+				} else if (returnBinaryData && mediaUrl) {
+					// Download the image/video and return as binary data
+					const imageUrl = mediaUrl;
 					const imageData = await this.helpers.request({
 						method: 'GET',
 						url: imageUrl,

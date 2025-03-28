@@ -145,36 +145,39 @@ export class WanXImageToVideo implements INodeType {
 			// Get image from source
 			if (imageSource === 'url') {
 				const imageUrl = this.getNodeParameter('imageUrl', i) as string;
-				
+
 				// Validate URL
 				try {
 					new URL(imageUrl);
-					
-					// Download the image first instead of passing the URL directly
-					const imageResponse = await this.helpers.request({
-						method: 'GET',
-						url: imageUrl,
-						encoding: null,
-						resolveWithFullResponse: true,
-					});
-					
-					// Convert to base64
-					const buffer = Buffer.from(imageResponse.body as Buffer);
-					const contentType = imageResponse.headers['content-type'] || 'image/png';
-					imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+
+					// Download the image instead of passing the URL directly
+					try {
+						const imageResponse = await this.helpers.request({
+							method: 'GET',
+							url: imageUrl,
+							encoding: null,
+							resolveWithFullResponse: true,
+						});
+						// Convert to base64
+						const buffer = Buffer.from(imageResponse.body as Buffer);
+						const contentType = imageResponse.headers['content-type'] || 'image/png';
+						imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+					} catch (error) {
+						throw new Error(`Failed to download image from URL: ${error.message}`);
+					}
 				} catch (error) {
-					throw new Error(`Failed to download image from URL: ${error.message}`);
+					throw new Error(`Invalid image URL: ${error.message}`);
 				}
 			} else {
 				// Binary data handling
 				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
 				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-				
+
 				// Check MIME type
 				if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
 					throw new Error('The provided binary data is not an image. Please provide valid image data.');
 				}
-				
+
 				if (binaryData.data) {
 					// Directly use the binary data
 					imageBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
@@ -187,7 +190,7 @@ export class WanXImageToVideo implements INodeType {
 							encoding: null,
 							resolveWithFullResponse: true,
 						});
-						
+
 						const buffer = Buffer.from(imageResponse.body as Buffer);
 						const contentType = imageResponse.headers['content-type'] || 'image/png';
 						imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
