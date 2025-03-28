@@ -73,3 +73,24 @@ export interface KlingTryOnParams {
 	lower_input?: string;
 	batch_size?: number;
 }
+
+export interface HailuoBaseParams {
+    prompt?: string;
+    expand_prompt?: boolean;
+    model: string; // t2v-01, i2v-01, s2v-01, t2v-01-director, i2v-01-director, i2v-01-live
+}
+
+export interface HailuoTextToVideoParams extends HailuoBaseParams {
+    prompt: string; // Required for text-to-video
+    image_url?: never; // Should not be provided for text-to-video
+}
+
+export interface HailuoImageToVideoParams extends HailuoBaseParams {
+    image_url: string; // Required for image-to-video
+    prompt?: string; // Optional for image-to-video
+}
+
+export interface HailuoSubjectVideoParams extends HailuoBaseParams {
+    prompt: string; // Required for subject reference video
+    image_url: string; // Required for subject reference video, must contain detectable human face
+}
