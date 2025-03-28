@@ -104,7 +104,7 @@ export class HailuoImageToVideo implements INodeType {
                 displayName: 'Wait for Completion',
                 name: 'waitForCompletion',
                 type: 'boolean',
-                default: true,
+                default: false,
                 description: 'Whether to wait for the video generation to complete',
             },
             {
