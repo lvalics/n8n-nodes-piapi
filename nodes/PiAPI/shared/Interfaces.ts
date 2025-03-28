@@ -58,6 +58,7 @@ export interface KlingLipSyncParams {
 	tts_timbre?: string;
 	tts_speed?: number;
 	local_dubbing_url?: string;
+	tts_emotion?: string;
 }
 
 export interface KlingEffectsParams {

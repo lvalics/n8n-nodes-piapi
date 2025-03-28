@@ -3,12 +3,90 @@ import {
     INodeExecutionData,
     INodeType,
     INodeTypeDescription,
+    ILoadOptionsFunctions,
+    INodePropertyOptions,
     NodeConnectionType,
 } from 'n8n-workflow';
 
 import { piApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
 
+// Voice data structure
+interface VoiceData {
+    name: string;
+    emotions: string[];
+}
+
+// Map of voice names to their available emotions
+const VOICE_EMOTIONS_MAP: { [key: string]: VoiceData } = {
+    "Rock": {
+        name: "Rock",
+        emotions: ["Happy", "Sad", "Angry", "Neutral"]
+    },
+    "Funny": {
+        name: "Funny",
+        emotions: ["Happy", "Excited", "Neutral"]
+    },
+    "Gentle": {
+        name: "Gentle",
+        emotions: ["Calm", "Sad", "Neutral"]
+    },
+    // Additional voices would be added here based on the Kling documentation
+};
+
+// Function to load available TTS voices from Kling API
+export async function loadTtsVoices(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+    try {
+        // We're using direct fetch here instead of piApiRequest since this is a public API endpoint
+        const response = await this.helpers.request({
+            method: 'GET',
+            url: 'https://klingai.com/api/lip/sync/ttsList?type=',
+            json: true,
+        });
+
+        if (!response || !Array.isArray(response)) {
+            return Object.keys(VOICE_EMOTIONS_MAP).map(voice => ({
+                name: voice,
+                value: voice,
+            }));
+        }
+        
+        // Transform the response into options
+        return response.map((voice: string) => ({
+            name: voice,
+            value: voice,
+        }));
+    } catch (error) {
+        // Return options from our map if the request fails
+        return Object.keys(VOICE_EMOTIONS_MAP).map(voice => ({
+            name: voice,
+            value: voice,
+        }));
+    }
+}
+
+// Function to load emotions for the selected voice
+export async function loadTtsEmotions(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+    const currentVoice = this.getCurrentNodeParameter('ttsVoice') as string;
+    
+    if (!currentVoice || !VOICE_EMOTIONS_MAP[currentVoice]) {
+        return [{ name: 'Neutral', value: 'Neutral' }];
+    }
+    
+    const emotions = VOICE_EMOTIONS_MAP[currentVoice].emotions;
+    return emotions.map(emotion => ({
+        name: emotion,
+        value: emotion
+    }));
+}
+
 export class KlingLipSync implements INodeType {
+    // Add method to load options
+    methods = {
+        loadOptions: {
+            loadTtsVoices,
+            loadTtsEmotions,
+        },
+    };
     description: INodeTypeDescription = {
         displayName: 'PiAPI Kling Lip Sync',
         name: 'klingLipSync',
@@ -74,7 +152,10 @@ export class KlingLipSync implements INodeType {
             {
                 displayName: 'Voice',
                 name: 'ttsVoice',
-                type: 'string',
+                type: 'options',
+                typeOptions: {
+                    loadOptionsMethod: 'loadTtsVoices',
+                },
                 default: 'Rock',
                 required: true,
                 displayOptions: {
@@ -82,7 +163,23 @@ export class KlingLipSync implements INodeType {
                         audioSource: ['tts'],
                     },
                 },
-                description: 'Voice to use for TTS (see the Kling TTS voice list for available options)',
+                description: 'Voice to use for text-to-speech',
+            },
+            {
+                displayName: 'Emotion',
+                name: 'ttsEmotion',
+                type: 'options',
+                typeOptions: {
+                    loadOptionsMethod: 'loadTtsEmotions',
+                },
+                default: 'Neutral',
+                required: false,
+                displayOptions: {
+                    show: {
+                        audioSource: ['tts'],
+                    },
+                },
+                description: 'Emotional style for the selected voice',
             },
             {
                 displayName: 'Speech Speed',
@@ -152,10 +249,17 @@ export class KlingLipSync implements INodeType {
                 if (audioSource === 'tts') {
                     const ttsText = this.getNodeParameter('ttsText', i) as string;
                     const ttsVoice = this.getNodeParameter('ttsVoice', i) as string;
+                    const ttsEmotion = this.getNodeParameter('ttsEmotion', i, 'Neutral') as string;
                     const ttsSpeed = this.getNodeParameter('ttsSpeed', i) as number;
+                    
+                    // Combine voice and emotion if emotion is selected
+                    let voiceWithEmotion = ttsVoice;
+                    if (ttsEmotion && ttsEmotion !== 'Neutral') {
+                        voiceWithEmotion = `${ttsVoice}-${ttsEmotion}`;
+                    }
 
                     body.input.tts_text = ttsText;
-                    body.input.tts_timbre = ttsVoice;
+                    body.input.tts_timbre = voiceWithEmotion;
                     body.input.tts_speed = ttsSpeed;
                     body.input.local_dubbing_url = '';
                 } else {
