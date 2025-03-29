@@ -171,3 +171,20 @@ export interface DiffRhythmAudioParams {
         };
     };
 }
+
+export interface TTSParams {
+    model: string;
+    task_type: string;
+    input: {
+        gen_text: string;
+        ref_audio: string; // Base64 encoded audio or URL
+        ref_text?: string; // Optional text corresponding to the reference audio
+    };
+    config: {
+        service_mode: string;
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
