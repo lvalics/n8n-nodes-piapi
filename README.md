@@ -2,7 +2,7 @@
 
 # n8n-nodes-piapi
 
-This n8n community node enables seamless integration of **[piAPI](https://piapi.ai/workspace?via=valics) in your [n8n](https://n8n.io) workflows**.
+This n8n community node enables seamless integration of **[PiAPI](https://piapi.ai/workspace?via=valics) in your [n8n](https://n8n.io) workflows**.
 
 ## Features
 
