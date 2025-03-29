@@ -188,3 +188,54 @@ export interface TTSParams {
         };
     };
 }
+
+export interface MidjourneyImagineParams {
+    model: string;
+    task_type: string;
+    input: {
+        prompt: string;
+        aspect_ratio?: string;
+        process_mode?: string; // relax, fast, turbo
+        skip_prompt_check?: boolean;
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+        service_mode?: string; // public, private
+    };
+}
+
+export interface MidjourneyUpscaleParams {
+    model: string;
+    task_type: string;
+    input: {
+        origin_task_id: string;
+        index: string; // 1, 2, 3, 4, light, beta, 2x, 4x, subtle, creative
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+        service_mode?: string; // public, private
+    };
+}
+
+export interface MidjourneyDescribeParams {
+    model: string;
+    task_type: string;
+    input: {
+        image_url: string;
+        process_mode?: string; // relax, fast, turbo
+        bot_id?: number;
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+        service_mode?: string; // public, private
+    };
+}

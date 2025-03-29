@@ -73,7 +73,8 @@
       "dist/nodes/PiAPI/Faceswap/FaceswapVideoToVideo.node.js",
       "dist/nodes/PiAPI/MMAudio/MMAudioVideoToAudio.node.js",
       "dist/nodes/PiAPI/DiffRhythm/DiffRhythmAudioGeneration.node.js",
-      "dist/nodes/PiAPI/TTS/TextToSpeech.node.js"
+      "dist/nodes/PiAPI/TTS/TextToSpeech.node.js",
+      "dist/nodes/PiAPI/Midjourney/PiAPIMidjourney.node.js"
     ]
   },
   "devDependencies": {
