@@ -71,7 +71,8 @@
       "dist/nodes/PiAPI/Trellis/TrellisModelGeneration.node.js",
       "dist/nodes/PiAPI/Faceswap/FaceswapImageToImage.node.js",
       "dist/nodes/PiAPI/Faceswap/FaceswapVideoToVideo.node.js",
-      "dist/nodes/PiAPI/MMAudio/MMAudioVideoToAudio.node.js"
+      "dist/nodes/PiAPI/MMAudio/MMAudioVideoToAudio.node.js",
+      "dist/nodes/PiAPI/DiffRhythm/DiffRhythmAudioGeneration.node.js"
     ]
   },
   "devDependencies": {

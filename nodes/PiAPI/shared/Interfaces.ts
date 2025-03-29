@@ -155,3 +155,19 @@ export interface MMAudioVideoToAudioParams {
         };
     };
 }
+
+export interface DiffRhythmAudioParams {
+    model: string;
+    task_type: string;
+    input: {
+        lyrics?: string;
+        style_prompt?: string;
+        style_audio?: string; // Base64 encoded audio or URL
+    };
+    config: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
