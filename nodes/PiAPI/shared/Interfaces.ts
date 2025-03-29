@@ -137,3 +137,21 @@ export interface FaceswapVideoParams {
         target_faces_index?: string; // Optional: indices of faces to replace in target video
     };
 }
+
+export interface MMAudioVideoToAudioParams {
+    model: string;
+    task_type: string;
+    input: {
+        prompt: string;
+        negative_prompt?: string;
+        video: string; // Base64 encoded video or URL
+        steps?: number; // 20-50
+        seed?: number;
+    };
+    config: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
