@@ -17,6 +17,10 @@ This n8n community node enables seamless integration of **[piAPI](https://piapi.
 - Sound Creation
 - Text to 3D
 - Image to 3D
+- Image/Video Upscale
+- Remove Background
+- Segment
+- Temporarely store files
 
 ## Installation
 

@@ -346,10 +346,14 @@ export class FluxTextToImage implements INodeType {
 
 			// Determine task type based on ControlNet/LoRA usage and model
 			let taskType = 'txt2img';
+			let includeLora = useLora && loraType !== 'none';
+			
 			if (model === 'Qubico/flux1-dev-advanced') {
 				if (useControlNet && controlNetType !== 'none') {
 					taskType = 'controlnet-lora';
-				} else if (useLora && loraType !== 'none') {
+					// For controlnet-lora, we need at least one of LoRA or ControlNet
+					// includeLora flag will determine if we include LoRA settings
+				} else if (includeLora) {
 					taskType = 'txt2img-lora';
 				}
 			}
@@ -359,26 +363,43 @@ export class FluxTextToImage implements INodeType {
 				task_type: taskType,
 				input: {
 					prompt,
-					negative_prompt: negativePrompt,
-					width,
-					height,
-					guidance_scale: guidanceScale,
-					batch_size: batchSize,
 				},
 			};
+			
+			// Only add parameters if they have meaningful values
+			if (negativePrompt) {
+				body.input.negative_prompt = negativePrompt;
+			}
+			
+			if (width && height) {
+				body.input.width = width;
+				body.input.height = height;
+			}
+			
+			if (guidanceScale) {
+				body.input.guidance_scale = guidanceScale;
+			}
+			
+			// Only add batch_size for Schnell model and when it's greater than 1
+			if (model === 'Qubico/flux1-schnell' && batchSize > 1) {
+				body.input.batch_size = batchSize;
+			}
 
-			// Add LoRA settings if using LoRA
-			if (useLora && loraType !== 'none') {
+			// Add LoRA settings if needed
+			if (includeLora && loraType !== 'none') {
 				body.input.lora_settings = [
 					{
 						lora_type: loraType,
 						lora_strength: loraStrength,
 					},
 				];
+			} else if (taskType === 'controlnet-lora') {
+				// For controlnet-lora task type, we need to include empty lora_settings if not specified
+				body.input.lora_settings = [];
 			}
 
 			// Add ControlNet settings if using ControlNet
-			if (useControlNet && controlNetType !== 'none') {
+			if (useControlNet && controlNetType !== 'none' && controlImageUrl) {
 				body.input.control_net_settings = [
 					{
 						control_type: controlNetType,

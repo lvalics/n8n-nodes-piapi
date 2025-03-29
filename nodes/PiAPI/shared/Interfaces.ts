@@ -239,3 +239,62 @@ export interface MidjourneyDescribeParams {
         service_mode?: string; // public, private
     };
 }
+
+export interface VideoUpscaleParams {
+    model: string;
+    task_type: string;
+    input: {
+        video: string; // Base64 encoded video or URL
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
+
+export interface ImageUpscaleParams {
+    model: string;
+    task_type: string;
+    input: {
+        image: string; // Base64 encoded image or URL
+        scale?: number; // Upscale factor, if supported
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
+
+export interface RemoveBackgroundParams {
+    model: string;
+    task_type: string;
+    input: {
+        image: string; // Base64 encoded image or URL
+    };
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
+
+export interface QubicoSegmentParams {
+    model: string;
+    task_type: string;
+    input: {
+        image: string; // URL of the target image
+        prompt: string; // Semantic prompt of what to segment
+        negative_prompt: string; // Semantic prompt of what not to segment
+        segment_factor: number; // Pixels to expand/shrink on the edge
+    };
+}
+
+export interface FileUploadParams {
+    file_name: string;
+    file_data: string; // Base64 encoded file data
+}

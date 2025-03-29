@@ -74,7 +74,12 @@
       "dist/nodes/PiAPI/MMAudio/MMAudioVideoToAudio.node.js",
       "dist/nodes/PiAPI/DiffRhythm/DiffRhythmAudioGeneration.node.js",
       "dist/nodes/PiAPI/TTS/TextToSpeech.node.js",
-      "dist/nodes/PiAPI/Midjourney/PiAPIMidjourney.node.js"
+      "dist/nodes/PiAPI/Midjourney/PiAPIMidjourney.node.js",
+      "dist/nodes/PiAPI/VideoUpscale/VideoUpscale.node.js",
+      "dist/nodes/PiAPI/ImageUpscale/ImageUpscale.node.js",
+      "dist/nodes/PiAPI/RemoveBackground/RemoveBackground.node.js",
+      "dist/nodes/PiAPI/Qubico/QubicoSegment.node.js",
+      "dist/nodes/PiAPI/FileUpload/FileUpload.node.js"
     ]
   },
   "devDependencies": {
