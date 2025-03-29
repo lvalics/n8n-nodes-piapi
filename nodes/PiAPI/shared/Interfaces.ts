@@ -96,11 +96,15 @@ export interface HailuoSubjectVideoParams extends HailuoBaseParams {
 }
 
 export interface SkyreelsImageToVideoParams {
-    prompt: string;
-    negative_prompt?: string;
-    image: string; // Base64 encoded image or URL
-    aspect_ratio?: string; // "16:9", "9:16", "1:1"
-    guidance_scale?: number; // 0.1 to 10
+    model: string;
+    task_type: string;
+    input: {
+        prompt: string;
+        negative_prompt?: string;
+        image: string; // Base64 encoded image or URL
+        aspect_ratio?: string; // "16:9", "9:16", "1:1"
+        guidance_scale?: number; // 0.1 to 10
+    }
 }
 
 export interface Trellis3DModelParams {

@@ -1,5 +1,5 @@
-import { SkytreelsImageToVideo } from './SkytreelsImageToVideo.node';
+import { SkyreelsImageToVideo } from './SkyreelsImageToVideo.node';
 
 export {
-    SkytreelsImageToVideo,
+    SkyreelsImageToVideo,
 };

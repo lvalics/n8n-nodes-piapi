@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-piapi",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "PiAPI workflow nodes",
   "keywords": [
     "n8n-community-node-package",
@@ -55,7 +55,20 @@
       "dist/nodes/PiAPI/DreamMachine/DreamMachineImageToVideo.node.js",
       "dist/nodes/PiAPI/DreamMachine/DreamMachineExtendVideo.node.js",
       "dist/nodes/PiAPI/WanX/WanXTextToVideo.node.js",
-      "dist/nodes/PiAPI/WanX/WanXImageToVideo.node.js"
+      "dist/nodes/PiAPI/WanX/WanXImageToVideo.node.js",
+      "dist/nodes/PiAPI/Hunyuan/HunyuanTextToVideo.node.js",
+      "dist/nodes/PiAPI/Hunyuan/HunyuanImageToVideo.node.js",
+      "dist/nodes/PiAPI/Kling/KlingTextToVideo.node.js",
+      "dist/nodes/PiAPI/Kling/KlingImageToVideo.node.js",
+      "dist/nodes/PiAPI/Kling/KlingVideoExtend.node.js",
+      "dist/nodes/PiAPI/Kling/KlingLipSync.node.js",
+      "dist/nodes/PiAPI/Kling/KlingEffects.node.js",
+      "dist/nodes/PiAPI/Kling/KlingTryOn.node.js",
+      "dist/nodes/PiAPI/Hailuo/HailuoTextToVideo.node.js",
+      "dist/nodes/PiAPI/Hailuo/HailuoImageToVideo.node.js",
+      "dist/nodes/PiAPI/Hailuo/HailuoSubjectVideo.node.js",
+      "dist/nodes/PiAPI/Skyreels/SkyreelsImageToVideo.node.js",
+      "dist/nodes/PiAPI/Trellis/TrellisModelGeneration.node.js"
     ]
   },
   "devDependencies": {

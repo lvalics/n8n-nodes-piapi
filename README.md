@@ -14,6 +14,9 @@ This n8n community node enables seamless integration of **[piAPI](https://piapi.
 - Image to Image
 - Virtual Try-on
 - Lip sync
+- Sound Creation
+- Text to 3D
+- Image to 3D
 
 ## Installation
 
@@ -26,11 +29,6 @@ Description of the node will go here.
 ## Credentials
 
 You will need an API key from piapi.ai to use this node. Add the API key to the credentials section in the settings of the node.
-
-## Version history
-
-### 0.1.0
-Initial version, RunwayML integrated with some services.
 
 ## Compatibility
 
