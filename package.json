@@ -68,7 +68,9 @@
       "dist/nodes/PiAPI/Hailuo/HailuoImageToVideo.node.js",
       "dist/nodes/PiAPI/Hailuo/HailuoSubjectVideo.node.js",
       "dist/nodes/PiAPI/Skyreels/SkyreelsImageToVideo.node.js",
-      "dist/nodes/PiAPI/Trellis/TrellisModelGeneration.node.js"
+      "dist/nodes/PiAPI/Trellis/TrellisModelGeneration.node.js",
+      "dist/nodes/PiAPI/Faceswap/FaceswapImageToImage.node.js",
+      "dist/nodes/PiAPI/Faceswap/FaceswapVideoToVideo.node.js"
     ]
   },
   "devDependencies": {

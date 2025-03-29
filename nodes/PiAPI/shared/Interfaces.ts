@@ -115,3 +115,25 @@ export interface Trellis3DModelParams {
     ss_guidance_strength?: number; // 0-10
     slat_guidance_strength?: number; // 0-10
 }
+
+export interface FaceswapImageParams {
+    model: string;
+    task_type: string;
+    input: {
+        target_image: string; // Base64 encoded image or URL
+        swap_image: string; // Base64 encoded image or URL
+        swap_faces_index?: string; // Optional: indices of faces to use from swap image
+        target_faces_index?: string; // Optional: indices of faces to replace in target image
+    };
+}
+
+export interface FaceswapVideoParams {
+    model: string;
+    task_type: string;
+    input: {
+        swap_image: string; // Base64 encoded image or URL
+        target_video: string; // Base64 encoded video or URL
+        swap_faces_index?: string; // Optional: indices of faces to use from swap image
+        target_faces_index?: string; // Optional: indices of faces to replace in target video
+    };
+}
