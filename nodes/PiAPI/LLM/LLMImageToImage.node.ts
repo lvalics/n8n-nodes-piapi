@@ -17,7 +17,7 @@ function generatePromptWithAspectRatio(
 ): string {
 	const aspectRatio = executeFunctions.getNodeParameter('aspectRatio', itemIndex) as string;
 	const imageStyle = executeFunctions.getNodeParameter('imageStyle', itemIndex, 'none') as string;
-	
+
 	let aspectRatioText = '';
 	if (aspectRatio === 'custom') {
 		const width = executeFunctions.getNodeParameter('width', itemIndex, 1024) as number;
@@ -26,13 +26,13 @@ function generatePromptWithAspectRatio(
 	} else if (aspectRatio !== 'square_header' && aspectRatio !== 'landscape_header' && aspectRatio !== 'portrait_header') {
 		aspectRatioText = `Image size: ${aspectRatio}. `;
 	}
-	
+
 	// Add style to the prompt if selected
 	let styleText = '';
 	if (imageStyle !== 'none') {
 		styleText = `Image style: ${imageStyle}. `;
 	}
-	
+
 	return `${aspectRatioText}${styleText}${prompt}`;
 }
 
@@ -167,7 +167,7 @@ export class LLMImageToImage implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],

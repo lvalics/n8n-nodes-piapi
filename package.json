@@ -81,8 +81,7 @@
       "dist/nodes/PiAPI/Qubico/QubicoSegment.node.js",
       "dist/nodes/PiAPI/FileUpload/FileUpload.node.js",
       "dist/nodes/PiAPI/LLM/LLMTextToImage.node.js",
-      "dist/nodes/PiAPI/LLM/LLMImageToImage.node.js",
-      "dist/nodes/PiAPI/LLM/LLMConversationalImage.node.js"
+      "dist/nodes/PiAPI/LLM/LLMImageToImage.node.js"
     ]
   },
   "devDependencies": {

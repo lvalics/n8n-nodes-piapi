@@ -17,7 +17,7 @@ function generatePromptWithAspectRatio(
 ): string {
 	const aspectRatio = executeFunctions.getNodeParameter('aspectRatio', itemIndex, 'default') as string;
 	const imageStyle = executeFunctions.getNodeParameter('imageStyle', itemIndex, 'none') as string;
-	
+
 	// Don't add aspect ratio if set to default
 	let aspectRatioText = '';
 	if (aspectRatio !== 'default') {
@@ -29,13 +29,13 @@ function generatePromptWithAspectRatio(
 			aspectRatioText = `Image size: ${aspectRatio}. `;
 		}
 	}
-	
+
 	// Add style to the prompt if selected
 	let styleText = '';
 	if (imageStyle !== 'none') {
 		styleText = `Image style: ${imageStyle}. `;
 	}
-	
+
 	return `${aspectRatioText}${styleText}${prompt}`;
 }
 
@@ -163,9 +163,9 @@ export class LLMConversationalImage implements INodeType {
 						name: 'Default (No Specification)',
 						value: 'default',
 					},
-					...ASPECT_RATIO_OPTIONS.filter(option => 
-						option.value !== 'square_header' && 
-						option.value !== 'landscape_header' && 
+					...ASPECT_RATIO_OPTIONS.filter(option =>
+						option.value !== 'square_header' &&
+						option.value !== 'landscape_header' &&
 						option.value !== 'portrait_header'
 					),
 				],
@@ -239,7 +239,7 @@ export class LLMConversationalImage implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],
@@ -259,10 +259,10 @@ export class LLMConversationalImage implements INodeType {
 
 			if (operation === 'new') {
 				const imageSource = this.getNodeParameter('imageSource', i) as string;
-				
+
 				// Start a new conversation
 				if (imageSource === 'none') {
-					// Text-only prompt with optional aspect ratio 
+					// Text-only prompt with optional aspect ratio
 					messages = [
 						{
 							role: 'user',
@@ -272,7 +272,7 @@ export class LLMConversationalImage implements INodeType {
 				} else {
 					// Get image URL
 					let imageUrl = '';
-					
+
 					if (imageSource === 'url') {
 						imageUrl = this.getNodeParameter('imageUrl', i) as string;
 					} else {
@@ -318,15 +318,15 @@ export class LLMConversationalImage implements INodeType {
 				// Continue existing conversation
 				try {
 					const previousMessages = JSON.parse(this.getNodeParameter('previousMessages', i) as string);
-					
+
 					// Validate previous messages
 					if (!Array.isArray(previousMessages)) {
 						throw new Error('Previous messages must be a valid JSON array');
 					}
-					
+
 					// Add previous messages
 					messages = [...previousMessages];
-					
+
 					// Add the new user message
 					messages.push({
 						role: 'user',

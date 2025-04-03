@@ -97,7 +97,7 @@ export class LLMTextToImage implements INodeType {
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
-				default: true,
+				default: false,
 				description: 'Wait for task to complete and return results',
 			},
 		],
@@ -127,10 +127,10 @@ export class LLMTextToImage implements INodeType {
 
 			// Get image style if specified
 			const imageStyle = this.getNodeParameter('imageStyle', i, 'none') as string;
-			
+
 			// Determine aspect ratio to include in the prompt
 			let aspectRatioText = '';
-			
+
 			if (aspectRatio === 'custom') {
 				const width = this.getNodeParameter('width', i, 1024) as number;
 				const height = this.getNodeParameter('height', i, 1024) as number;
@@ -138,13 +138,13 @@ export class LLMTextToImage implements INodeType {
 			} else if (aspectRatio !== 'square_header' && aspectRatio !== 'landscape_header' && aspectRatio !== 'portrait_header') {
 				aspectRatioText = `Image size: ${aspectRatio}. `;
 			}
-			
+
 			// Add style to the prompt if selected
 			let styleText = '';
 			if (imageStyle !== 'none') {
 				styleText = `Image style: ${imageStyle}. `;
 			}
-			
+
 			// Add aspect ratio and style to the prompt text
 			body.messages[0].content = `${aspectRatioText}${styleText}${prompt}`;
 
