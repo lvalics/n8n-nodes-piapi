@@ -8,6 +8,7 @@ This n8n community node enables seamless integration of **[PiAPI](https://piapi.
 
 - Image to Video
 - Text to Video
+- Director Mode (camera control)
 - Video Extension
 - Video Effects
 - Text to Image
@@ -28,6 +29,14 @@ This n8n community node enables seamless integration of **[PiAPI](https://piapi.
 The new GPT-4o integration allows for:
 - Advanced text-to-image generation with superior text rendering
 - Image-to-image editing with natural language instructions
+
+## Director Mode
+
+The Director Mode (available in Hailuo nodes) allows:
+- Camera movement control in video generation
+- Use bracket syntax like `[Push in,Pedestal up]walking man` in your prompts
+- Supports movements such as Pan, Tilt, Truck, Push, Pedestal, Zoom, Shake and Static shot
+- Available in both text-to-video and image-to-video nodes
 
 ## Installation
 
