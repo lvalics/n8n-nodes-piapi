@@ -116,25 +116,45 @@ export interface Trellis3DModelParams {
     slat_guidance_strength?: number; // 0-10
 }
 
+// Enhanced interface for faceswap image inputs with better documentation
+export interface FaceswapImageInput {
+    target_image: string; // Base64 encoded image or URL of image where faces will be replaced
+    swap_image: string;   // Base64 encoded image or URL of image containing the faces to use
+    swap_faces_index?: string;  // Comma-separated indices of faces to use from swap image, e.g. "0" or "0,1" or "1,0"
+    target_faces_index?: string; // Comma-separated indices of faces to replace in target, e.g. "0" or "0,1" or "1,0"
+}
+
 export interface FaceswapImageParams {
-    model: string;
-    task_type: string;
-    input: {
-        target_image: string; // Base64 encoded image or URL
-        swap_image: string; // Base64 encoded image or URL
-        swap_faces_index?: string; // Optional: indices of faces to use from swap image
-        target_faces_index?: string; // Optional: indices of faces to replace in target image
+    model: string;        // Should be "Qubico/image-toolkit"
+    task_type: string;    // Should be "face-swap" for single face or "multi-face-swap" for multiple faces
+    input: FaceswapImageInput;
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+        service_mode?: string; // "public" or "private"
     };
 }
 
+// Enhanced interface for faceswap video inputs with better documentation
+export interface FaceswapVideoInput {
+    swap_image: string;   // Base64 encoded image or URL of image containing the faces to use
+    target_video: string; // Base64 encoded video or URL of video where faces will be replaced (MP4 only, max 10MB, 720p)
+    swap_faces_index?: string;  // Comma-separated indices of faces to use from swap image, e.g. "0" or "0,1" or "1,0"
+    target_faces_index?: string; // Comma-separated indices of faces to replace in target, e.g. "0" or "0,1" or "1,0"
+}
+
 export interface FaceswapVideoParams {
-    model: string;
-    task_type: string;
-    input: {
-        swap_image: string; // Base64 encoded image or URL
-        target_video: string; // Base64 encoded video or URL
-        swap_faces_index?: string; // Optional: indices of faces to use from swap image
-        target_faces_index?: string; // Optional: indices of faces to replace in target video
+    model: string;        // Should be "Qubico/video-toolkit"
+    task_type: string;    // Should be "face-swap"
+    input: FaceswapVideoInput;
+    config?: {
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+        service_mode?: string; // "public" or "private"
     };
 }
 

@@ -13,12 +13,12 @@ import { FaceswapImageParams } from '../shared/Interfaces';
 
 export class FaceswapImageToImage implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'PiAPI Faceswap',
+        displayName: 'PiAPI Image Faceswap (Single & Multi-Face)',
         name: 'faceswapImageToImage',
         icon: 'file:../piapi.svg',
         group: ['transform'],
         version: 1,
-        description: 'Swap faces in images using PiAPI Faceswap',
+        description: 'Swap one or multiple faces in images with precise face index control using PiAPI Faceswap API',
         defaults: {
             name: 'Faceswap',
         },
@@ -31,6 +31,14 @@ export class FaceswapImageToImage implements INodeType {
             },
         ],
         properties: [
+            // Multi-Face Support Highlight
+            {
+                displayName: 'Multi-Face Support',
+                name: 'multiFaceSupport',
+                type: 'notice',
+                default: 'This node supports swapping multiple faces between images. Use the Advanced Options to specify which faces to swap with index numbers (0,1,2, etc.).',
+            },
+            
             // Target Image (the image that will have faces replaced)
             {
                 displayName: 'Target Image Input Method',
@@ -126,12 +134,12 @@ export class FaceswapImageToImage implements INodeType {
                 displayName: 'Face Indices Information',
                 name: 'faceIndicesInfo',
                 type: 'notice',
-                default: 'Faces are detected in order from left to right in most cases. For diagonal positioning, top-left might be 1 and bottom-right 0. Leave blank to swap all detected faces.',
+                default: 'Faces are detected in order from left to right in most cases. For diagonal positioning, top-left might be 1 and bottom-right 0. Leave blank to swap only the largest detected face.',
             },
             
             // Advanced options
             {
-                displayName: 'Advanced Options',
+                displayName: 'Multi-Face Swap Options',
                 name: 'advancedOptions',
                 type: 'collection',
                 placeholder: 'Add Option',
@@ -143,7 +151,7 @@ export class FaceswapImageToImage implements INodeType {
                         type: 'string',
                         default: '',
                         placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to use from the swap image (e.g., "0" or "1,0")',
+                        description: 'Index(es) of faces to use from the swap image (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap order)',
                     },
                     {
                         displayName: 'Target Faces Index',
@@ -151,7 +159,7 @@ export class FaceswapImageToImage implements INodeType {
                         type: 'string',
                         default: '',
                         placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to replace in the target image (e.g., "0" or "0,1")',
+                        description: 'Index(es) of faces to replace in the target image (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap positions)',
                     },
                 ],
             },
@@ -257,7 +265,7 @@ export class FaceswapImageToImage implements INodeType {
                 // Prepare request parameters
                 const requestBody: FaceswapImageParams = {
                     model: 'Qubico/image-toolkit',
-                    task_type: 'face-swap',
+                    task_type: advancedOptions.swapFacesIndex && advancedOptions.targetFacesIndex ? 'multi-face-swap' : 'face-swap',
                     input: {
                         target_image: targetImageData,
                         swap_image: swapImageData,

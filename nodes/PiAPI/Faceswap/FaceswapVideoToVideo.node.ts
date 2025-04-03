@@ -13,12 +13,12 @@ import { FaceswapVideoParams } from '../shared/Interfaces';
 
 export class FaceswapVideoToVideo implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'PiAPI Video Faceswap',
+        displayName: 'PiAPI Video Faceswap (Single & Multi-Face)',
         name: 'faceswapVideoToVideo',
         icon: 'file:../piapi.svg',
         group: ['transform'],
         version: 1,
-        description: 'Swap faces from an image to a video using PiAPI Video Faceswap',
+        description: 'Swap one or multiple faces from an image to a video with precise face index control using PiAPI Video Faceswap API',
         defaults: {
             name: 'Video Faceswap',
         },
@@ -31,6 +31,14 @@ export class FaceswapVideoToVideo implements INodeType {
             },
         ],
         properties: [
+            // Multi-Face Support Highlight
+            {
+                displayName: 'Multi-Face Support',
+                name: 'multiFaceSupport',
+                type: 'notice',
+                default: 'This node supports swapping multiple faces from an image to a video. Use the Advanced Options to specify which faces to swap with index numbers (0,1,2, etc.).',
+            },
+            
             // Swap Image (the image containing the face(s) to use)
             {
                 displayName: 'Swap Image Input Method',
@@ -139,7 +147,7 @@ export class FaceswapVideoToVideo implements INodeType {
             
             // Advanced options
             {
-                displayName: 'Advanced Options',
+                displayName: 'Multi-Face Swap Options',
                 name: 'advancedOptions',
                 type: 'collection',
                 placeholder: 'Add Option',
@@ -151,7 +159,7 @@ export class FaceswapVideoToVideo implements INodeType {
                         type: 'string',
                         default: '',
                         placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to use from the swap image (e.g., "0" or "1,0")',
+                        description: 'Index(es) of faces to use from the swap image (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap order)',
                     },
                     {
                         displayName: 'Target Faces Index',
@@ -159,7 +167,7 @@ export class FaceswapVideoToVideo implements INodeType {
                         type: 'string',
                         default: '',
                         placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to replace in the target video (e.g., "0" or "0,1")',
+                        description: 'Index(es) of faces to replace in the target video (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap positions)',
                     },
                 ],
             },
@@ -270,6 +278,9 @@ export class FaceswapVideoToVideo implements INodeType {
                         swap_image: swapImageData,
                         target_video: targetVideoData,
                     },
+                    config: {
+                        service_mode: 'public'
+                    }
                 };
                 
                 // Add face indices if provided

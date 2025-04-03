@@ -14,6 +14,7 @@ This n8n community node enables seamless integration of **[PiAPI](https://piapi.
 - Text to Image
 - Image to Image
 - Virtual Try-on
+- Face swapping (single face and multi-face with precise index-based control)
 - Lip sync
 - Sound Creation
 - Text to 3D
