@@ -7,7 +7,7 @@ import {
 } from 'n8n-workflow';
 
 import { piApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
-import { WANX_MODELS } from '../shared/Constants';
+import { WANX_MODELS, GHIBLI_STYLE_OPTIONS } from '../shared/Constants';
 
 export class WanXTextToVideo implements INodeType {
 	description: INodeTypeDescription = {
@@ -76,6 +76,19 @@ export class WanXTextToVideo implements INodeType {
 				description: 'Aspect ratio of the generated video',
 			},
 			{
+				displayName: 'Ghibli Style',
+				name: 'ghibliStyle',
+				type: 'options',
+				options: GHIBLI_STYLE_OPTIONS,
+				default: 'ghibli',
+				description: 'Studio Ghibli animation style to use',
+				displayOptions: {
+					show: {
+						model: ['txt2video-14b-lora'],
+					},
+				},
+			},
+			{
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
@@ -96,7 +109,7 @@ export class WanXTextToVideo implements INodeType {
 			const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
 			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, true) as boolean;
 
-			const body = {
+			const body: any = {
 				model: 'Qubico/wanx',
 				task_type: model,
 				input: {
@@ -106,6 +119,12 @@ export class WanXTextToVideo implements INodeType {
 					video_resolution: '480P',
 				},
 			};
+
+			// Add lora_type for Ghibli style videos
+			if (model === 'txt2video-14b-lora') {
+				const ghibliStyle = this.getNodeParameter('ghibliStyle', i) as string;
+				body.input.lora_type = ghibliStyle;
+			}
 
 			try {
 				// Create the task

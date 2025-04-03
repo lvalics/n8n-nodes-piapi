@@ -248,6 +248,14 @@ export const LORA_OPTIONS = [
   },
 ];
 
+export const GHIBLI_STYLE_OPTIONS = [
+  {
+    name: 'Default Ghibli Style',
+    value: 'ghibli',
+    description: 'Standard Studio Ghibli animation style',
+  },
+];
+
 export const WANX_MODELS = [
   {
     name: 'Lightweight (1.3B)',
@@ -262,9 +270,21 @@ export const WANX_MODELS = [
     price: 0.28,
   },
   {
+    name: 'Ghibli Animation (14B)',
+    value: 'txt2video-14b-lora',
+    description: 'Generate authentic Studio Ghibli-style animation videos ($0.28 per generation)',
+    price: 0.28,
+  },
+  {
     name: 'Image to Video (14B)',
     value: 'img2video-14b',
     description: 'Image-to-video transformation model ($0.28 per generation)',
+    price: 0.28,
+  },
+  {
+    name: 'Keyframe Image to Video (14B)',
+    value: 'img2video-14b-keyframe',
+    description: 'Generate video from first and last frame images ($0.28 per generation)',
     price: 0.28,
   },
 ];

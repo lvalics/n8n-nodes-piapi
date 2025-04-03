@@ -54,7 +54,7 @@ export class WanXImageToVideo implements INodeType {
 				displayName: 'Model',
 				name: 'model',
 				type: 'options',
-				options: WANX_MODELS.filter(model => model.value === 'img2video-14b'),
+				options: WANX_MODELS.filter(model => model.value === 'img2video-14b' || model.value === 'img2video-14b-keyframe'),
 				default: 'img2video-14b',
 				description: 'The WanX model to use for image-to-video generation',
 			},
@@ -74,6 +74,55 @@ export class WanXImageToVideo implements INodeType {
 				],
 				default: 'url',
 				description: 'The source of the input image',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b'],
+					},
+				},
+			},
+			{
+				displayName: 'First Frame Source',
+				name: 'firstFrameSource',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Binary Data',
+						value: 'binaryData',
+					},
+				],
+				default: 'url',
+				description: 'The source of the first frame image',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b-keyframe'],
+					},
+				},
+			},
+			{
+				displayName: 'Last Frame Source',
+				name: 'lastFrameSource',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Binary Data',
+						value: 'binaryData',
+					},
+				],
+				default: 'url',
+				description: 'The source of the last frame image',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b-keyframe'],
+					},
+				},
 			},
 			{
 				displayName: 'Image URL',
@@ -84,9 +133,38 @@ export class WanXImageToVideo implements INodeType {
 				displayOptions: {
 					show: {
 						imageSource: ['url'],
+						model: ['img2video-14b'],
 					},
 				},
 				description: 'Direct URL to the image (must be a publicly accessible image file)',
+			},
+			{
+				displayName: 'First Frame URL',
+				name: 'firstFrameUrl',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						firstFrameSource: ['url'],
+						model: ['img2video-14b-keyframe'],
+					},
+				},
+				description: 'Direct URL to the first frame image (must be a publicly accessible image file)',
+			},
+			{
+				displayName: 'Last Frame URL',
+				name: 'lastFrameUrl',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						lastFrameSource: ['url'],
+						model: ['img2video-14b-keyframe'],
+					},
+				},
+				description: 'Direct URL to the last frame image (must be a publicly accessible image file)',
 			},
 			{
 				displayName: 'Binary Property',
@@ -97,9 +175,38 @@ export class WanXImageToVideo implements INodeType {
 				displayOptions: {
 					show: {
 						imageSource: ['binaryData'],
+						model: ['img2video-14b'],
 					},
 				},
 				description: 'Name of the binary property containing the image data',
+			},
+			{
+				displayName: 'First Frame Binary Property',
+				name: 'firstFrameBinaryPropertyName',
+				type: 'string',
+				default: 'firstFrame',
+				required: true,
+				displayOptions: {
+					show: {
+						firstFrameSource: ['binaryData'],
+						model: ['img2video-14b-keyframe'],
+					},
+				},
+				description: 'Name of the binary property containing the first frame image data',
+			},
+			{
+				displayName: 'Last Frame Binary Property',
+				name: 'lastFrameBinaryPropertyName',
+				type: 'string',
+				default: 'lastFrame',
+				required: true,
+				displayOptions: {
+					show: {
+						lastFrameSource: ['binaryData'],
+						model: ['img2video-14b-keyframe'],
+					},
+				},
+				description: 'Name of the binary property containing the last frame image data',
 			},
 			{
 				displayName: 'Aspect Ratio',
@@ -138,20 +245,45 @@ export class WanXImageToVideo implements INodeType {
 			const model = this.getNodeParameter('model', i, 'img2video-14b') as string;
 			const aspectRatio = this.getNodeParameter('aspectRatio', i) as string;
 			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, false) as boolean;
-			const imageSource = this.getNodeParameter('imageSource', i) as string;
+			let body: {
+				model: string,
+				task_type: string,
+				input: {
+					prompt: string,
+					negative_prompt: string,
+					aspect_ratio: string,
+					video_resolution: string,
+					image?: string,
+					first_frame?: string,
+					last_frame?: string,
+				},
+			};
 
-			let imageBase64 = '';
+			// Set up body with common properties
+			body = {
+				model: 'Qubico/wanx',
+				task_type: model,
+				input: {
+					prompt,
+					negative_prompt: negativePrompt,
+					aspect_ratio: aspectRatio,
+					video_resolution: '480P',
+				},
+			};
 
-			// Get image from source
-			if (imageSource === 'url') {
-				const imageUrl = this.getNodeParameter('imageUrl', i) as string;
+			if (model === 'img2video-14b') {
+				// Standard image to video flow
+				const imageSource = this.getNodeParameter('imageSource', i) as string;
+				let imageBase64 = '';
 
-				// Validate URL
-				try {
-					new URL(imageUrl);
+				// Get image from source
+				if (imageSource === 'url') {
+					const imageUrl = this.getNodeParameter('imageUrl', i) as string;
 
-					// Download the image instead of passing the URL directly
+					// Validate URL and download image
 					try {
+						new URL(imageUrl);
+
 						const imageResponse = await this.helpers.request({
 							method: 'GET',
 							url: imageUrl,
@@ -165,54 +297,147 @@ export class WanXImageToVideo implements INodeType {
 					} catch (error) {
 						throw new Error(`Failed to download image from URL: ${error.message}`);
 					}
-				} catch (error) {
-					throw new Error(`Invalid image URL: ${error.message}`);
-				}
-			} else {
-				// Binary data handling
-				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
-				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+				} else {
+					// Binary data handling
+					const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
 
-				// Check MIME type
-				if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
-					throw new Error('The provided binary data is not an image. Please provide valid image data.');
+					// Check MIME type
+					if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
+						throw new Error('The provided binary data is not an image. Please provide valid image data.');
+					}
+
+					if (binaryData.data) {
+						// Directly use the binary data
+						imageBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
+					} else if (binaryData.url) {
+						// If we have a URL in binary data, download it
+						try {
+							const imageResponse = await this.helpers.request({
+								method: 'GET',
+								url: binaryData.url as string,
+								encoding: null,
+								resolveWithFullResponse: true,
+							});
+
+							const buffer = Buffer.from(imageResponse.body as Buffer);
+							const contentType = imageResponse.headers['content-type'] || 'image/png';
+							imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+						} catch (error) {
+							throw new Error(`Failed to download image from binary URL: ${error.message}`);
+						}
+					} else {
+						throw new Error('Could not extract image from binary data. Missing URL or data.');
+					}
 				}
 
-				if (binaryData.data) {
-					// Directly use the binary data
-					imageBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
-				} else if (binaryData.url) {
-					// If we have a URL in binary data, download it
+				// Add the single image to the input parameters
+				body.input.image = imageBase64;
+			} else if (model === 'img2video-14b-keyframe') {
+				// Keyframe mode - need first and last frame
+				const firstFrameSource = this.getNodeParameter('firstFrameSource', i) as string;
+				const lastFrameSource = this.getNodeParameter('lastFrameSource', i) as string;
+				
+				// Process first frame
+				let firstFrameBase64 = '';
+				if (firstFrameSource === 'url') {
+					const firstFrameUrl = this.getNodeParameter('firstFrameUrl', i) as string;
 					try {
+						new URL(firstFrameUrl);
 						const imageResponse = await this.helpers.request({
 							method: 'GET',
-							url: binaryData.url as string,
+							url: firstFrameUrl,
 							encoding: null,
 							resolveWithFullResponse: true,
 						});
-
 						const buffer = Buffer.from(imageResponse.body as Buffer);
 						const contentType = imageResponse.headers['content-type'] || 'image/png';
-						imageBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+						firstFrameBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
 					} catch (error) {
-						throw new Error(`Failed to download image from binary URL: ${error.message}`);
+						throw new Error(`Failed to download first frame image: ${error.message}`);
 					}
 				} else {
-					throw new Error('Could not extract image from binary data. Missing URL or data.');
-				}
-			}
+					// Binary data for first frame
+					const binaryPropertyName = this.getNodeParameter('firstFrameBinaryPropertyName', i) as string;
+					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+					
+					if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
+						throw new Error('The provided first frame binary data is not an image.');
+					}
 
-			const body = {
-				model: 'Qubico/wanx',
-				task_type: model,
-				input: {
-					prompt,
-					negative_prompt: negativePrompt,
-					image: imageBase64,
-					aspect_ratio: aspectRatio,
-					video_resolution: '480P',
-				},
-			};
+					if (binaryData.data) {
+						firstFrameBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
+					} else if (binaryData.url) {
+						try {
+							const imageResponse = await this.helpers.request({
+								method: 'GET',
+								url: binaryData.url as string,
+								encoding: null,
+								resolveWithFullResponse: true,
+							});
+							const buffer = Buffer.from(imageResponse.body as Buffer);
+							const contentType = imageResponse.headers['content-type'] || 'image/png';
+							firstFrameBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+						} catch (error) {
+							throw new Error(`Failed to download first frame from binary URL: ${error.message}`);
+						}
+					} else {
+						throw new Error('Could not extract first frame from binary data.');
+					}
+				}
+				
+				// Process last frame
+				let lastFrameBase64 = '';
+				if (lastFrameSource === 'url') {
+					const lastFrameUrl = this.getNodeParameter('lastFrameUrl', i) as string;
+					try {
+						new URL(lastFrameUrl);
+						const imageResponse = await this.helpers.request({
+							method: 'GET',
+							url: lastFrameUrl,
+							encoding: null,
+							resolveWithFullResponse: true,
+						});
+						const buffer = Buffer.from(imageResponse.body as Buffer);
+						const contentType = imageResponse.headers['content-type'] || 'image/png';
+						lastFrameBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+					} catch (error) {
+						throw new Error(`Failed to download last frame image: ${error.message}`);
+					}
+				} else {
+					// Binary data for last frame
+					const binaryPropertyName = this.getNodeParameter('lastFrameBinaryPropertyName', i) as string;
+					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+					
+					if (binaryData.mimeType && !binaryData.mimeType.includes('image/')) {
+						throw new Error('The provided last frame binary data is not an image.');
+					}
+
+					if (binaryData.data) {
+						lastFrameBase64 = `data:${binaryData.mimeType};base64,${binaryData.data}`;
+					} else if (binaryData.url) {
+						try {
+							const imageResponse = await this.helpers.request({
+								method: 'GET',
+								url: binaryData.url as string,
+								encoding: null,
+								resolveWithFullResponse: true,
+							});
+							const buffer = Buffer.from(imageResponse.body as Buffer);
+							const contentType = imageResponse.headers['content-type'] || 'image/png';
+							lastFrameBase64 = `data:${contentType};base64,${buffer.toString('base64')}`;
+						} catch (error) {
+							throw new Error(`Failed to download last frame from binary URL: ${error.message}`);
+						}
+					} else {
+						throw new Error('Could not extract last frame from binary data.');
+					}
+				}
+				
+				// Add the first and last frames to the input parameters
+				body.input.first_frame = firstFrameBase64;
+				body.input.last_frame = lastFrameBase64;
+			}
 
 			try {
 				// Create the task
