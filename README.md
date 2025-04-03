@@ -20,7 +20,15 @@ This n8n community node enables seamless integration of **[PiAPI](https://piapi.
 - Image/Video Upscale
 - Remove Background
 - Segment
+- GPT-4o Image Generation
 - Temporarely store files
+
+## GPT-4o Image Generation
+
+The new GPT-4o integration allows for:
+- Advanced text-to-image generation with superior text rendering
+- Image-to-image editing with natural language instructions
+- Conversational image editing across multiple turns
 
 ## Installation
 

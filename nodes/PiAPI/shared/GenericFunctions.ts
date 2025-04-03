@@ -35,6 +35,31 @@ export async function piApiRequest(
 	}
 }
 
+// Special request function for LLM API endpoints which require Bearer token auth
+export async function llmApiRequest(
+	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	body: IDataObject = {},
+) {
+	const credentials = await this.getCredentials('piAPIApi');
+	
+	const options: IDataObject = {
+		method: 'POST',
+		body,
+		url: 'https://api.piapi.ai/v1/chat/completions',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${credentials.apiKey as string}`,
+		},
+		json: true,
+	};
+
+	try {
+		return await this.helpers.request!(options as JsonObject);
+	} catch (error) {
+		throw new NodeApiError(this.getNode(), error as JsonObject);
+	}
+}
+
 export async function waitForTaskCompletion(
 	this: IExecuteFunctions,
 	taskId: string,

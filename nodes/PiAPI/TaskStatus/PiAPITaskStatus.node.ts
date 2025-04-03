@@ -72,6 +72,12 @@ export class PiAPITaskStatus implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			const taskId = this.getNodeParameter('taskId', i) as string;
+			
+			// Validate task ID
+			if (!taskId || taskId.trim() === '') {
+				throw new Error('Task ID is required and cannot be empty');
+			}
+			
 			const returnOnlyImageUrl = this.getNodeParameter('returnOnlyImageUrl', i, false) as boolean;
 			const returnBinaryData = this.getNodeParameter('returnBinaryData', i, false) as boolean;
 			const binaryPropertyName = returnBinaryData
@@ -80,7 +86,13 @@ export class PiAPITaskStatus implements INodeType {
 
 			try {
 				// Get task status
-				const response = await piApiRequest.call(this, 'GET', `/api/v1/task/${taskId}`);
+				const encodedTaskId = encodeURIComponent(taskId.trim());
+				const response = await piApiRequest.call(this, 'GET', `/api/v1/task/${encodedTaskId}`);
+				
+				// Check for API errors
+				if (!response.data || response.code !== 200) {
+					throw new Error(`Failed to retrieve task: ${response.message || 'Unknown error'}`);
+				}
 
 				// Handle both image_url and video_url in the output
 				const mediaUrl = response.data?.output?.image_url || response.data?.output?.video_url;
