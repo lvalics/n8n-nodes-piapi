@@ -137,39 +137,54 @@ export class FaceswapVideoToVideo implements INodeType {
                 default: 'Video must be MP4 format, maximum 10MB size, maximum 720p resolution, and maximum 600 frames.',
             },
             
-            // Face Indices Information
+            // Enable Multi-Face Selection toggle
+            {
+                displayName: 'Enable Multi-Face Selection',
+                name: 'enableMultiFaceSelection',
+                type: 'boolean',
+                default: false,
+                description: 'Whether to manually select specific faces by index',
+            },
+            
+            // Face Indices Information - only shown when multi-face selection is enabled
             {
                 displayName: 'Face Indices Information',
                 name: 'faceIndicesInfo',
                 type: 'notice',
-                default: 'Faces are detected in order from left to right in most cases. For diagonal positioning, top-left might be 1 and bottom-right 0. Leave blank to swap all detected faces.',
+                displayOptions: {
+                    show: {
+                        enableMultiFaceSelection: [true],
+                    },
+                },
+                default: 'Faces are detected in order from left to right in most cases. For diagonal positioning, top-left might be 1 and bottom-right 0.',
             },
             
-            // Advanced options
+            // Face index inputs - directly in the main UI when enabled
             {
-                displayName: 'Multi-Face Swap Options',
-                name: 'advancedOptions',
-                type: 'collection',
-                placeholder: 'Add Option',
-                default: {},
-                options: [
-                    {
-                        displayName: 'Swap Faces Index',
-                        name: 'swapFacesIndex',
-                        type: 'string',
-                        default: '',
-                        placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to use from the swap image (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap order)',
+                displayName: 'Swap Faces Index',
+                name: 'swapFacesIndex',
+                type: 'string',
+                default: '0',
+                displayOptions: {
+                    show: {
+                        enableMultiFaceSelection: [true],
                     },
-                    {
-                        displayName: 'Target Faces Index',
-                        name: 'targetFacesIndex',
-                        type: 'string',
-                        default: '',
-                        placeholder: '0 or 0,1',
-                        description: 'Index(es) of faces to replace in the target video (e.g., "0" for first face, "0,1" for first and second faces, "1,0" to swap positions)',
+                },
+                placeholder: '0 or 0,1',
+                description: 'Index(es) of faces to use from the swap image (e.g., "0" for first face, "0,1" for first and second faces)',
+            },
+            {
+                displayName: 'Target Faces Index',
+                name: 'targetFacesIndex',
+                type: 'string',
+                default: '0',
+                displayOptions: {
+                    show: {
+                        enableMultiFaceSelection: [true],
                     },
-                ],
+                },
+                placeholder: '0 or 0,1',
+                description: 'Index(es) of faces to replace in the target video (e.g., "0" for first face, "0,1" for first and second faces)',
             },
             
             // Wait for completion
@@ -218,11 +233,16 @@ export class FaceswapVideoToVideo implements INodeType {
                 const targetVideoInputMethod = this.getNodeParameter('targetVideoInputMethod', i) as string;
                 const waitForCompletion = this.getNodeParameter('waitForCompletion', i, false) as boolean;
                 
-                // Get advanced options if enabled
-                const advancedOptions = this.getNodeParameter('advancedOptions', i, {}) as {
-                    swapFacesIndex?: string;
-                    targetFacesIndex?: string;
-                };
+                // Get face indices if multi-face selection is enabled
+                const enableMultiFaceSelection = this.getNodeParameter('enableMultiFaceSelection', i, false) as boolean;
+                
+                let swapFacesIndex = '';
+                let targetFacesIndex = '';
+                
+                if (enableMultiFaceSelection) {
+                    swapFacesIndex = this.getNodeParameter('swapFacesIndex', i, '0') as string;
+                    targetFacesIndex = this.getNodeParameter('targetFacesIndex', i, '0') as string;
+                }
                 
                 // Process swap image based on input method
                 let swapImageData: string;
@@ -283,13 +303,10 @@ export class FaceswapVideoToVideo implements INodeType {
                     }
                 };
                 
-                // Add face indices if provided
-                if (advancedOptions.swapFacesIndex) {
-                    requestBody.input.swap_faces_index = advancedOptions.swapFacesIndex;
-                }
-                
-                if (advancedOptions.targetFacesIndex) {
-                    requestBody.input.target_faces_index = advancedOptions.targetFacesIndex;
+                // Add face indices if multi-face selection is enabled
+                if (enableMultiFaceSelection) {
+                    requestBody.input.swap_faces_index = swapFacesIndex;
+                    requestBody.input.target_faces_index = targetFacesIndex;
                 }
                 
                 // Make the API request
