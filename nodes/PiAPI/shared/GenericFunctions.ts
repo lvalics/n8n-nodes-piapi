@@ -15,7 +15,7 @@ export async function piApiRequest(
 	qs: IDataObject = {},
 ) {
 	const credentials = await this.getCredentials('piAPIApi');
-	
+
 	const options: IDataObject = {
 		method,
 		body,
@@ -41,7 +41,7 @@ export async function llmApiRequest(
 	body: IDataObject = {},
 ) {
 	const credentials = await this.getCredentials('piAPIApi');
-	
+
 	const options: IDataObject = {
 		method: 'POST',
 		body,
@@ -67,74 +67,117 @@ export async function waitForTaskCompletion(
 	retryInterval = 3000,
 ): Promise<IDataObject> {
 	let retries = 0;
-	
+
 	while (retries < maxRetries) {
 		const response = await piApiRequest.call(
 			this,
 			'GET',
 			`/api/v1/task/${taskId}`,
 		);
-		
+
 		const status = response.data?.status;
-		
+
 		if (status === 'success' || status === 'completed') {
 			return response.data;
 		}
-		
+
 		if (status === 'failed') {
 			throw new Error(`Task failed: ${JSON.stringify(response.data?.error || 'Unknown error')}`);
 		}
-		
+
 		// Wait before trying again
 		await new Promise(resolve => setTimeout(resolve, retryInterval));
 		retries++;
 	}
-	
+
 	throw new Error(`Task timed out after ${maxRetries} retries`);
 }
 
 /**
- * Extracts image URL from GPT-4o response content, either from markdown image syntax
- * or from the response data containing image URLs directly
+ * Extracts image URL from GPT-4o response content, handling various formats
+ * including markdown image syntax, regular markdown links, and direct URLs
  * @param content - The response content string from GPT-4o
  * @returns The extracted image URL or null if not found
+ * @todo Improve regex patterns to handle more complex cases, not always get back the URL
  */
 export function extractImageUrlFromResponse(content: string): string | null {
-  // First, try the markdown pattern
-  const imageUrlPattern = /!\[.*?\]\((.*?)\)/;
+  // First, try the image markdown pattern
+  const imageUrlPattern = /!\[.*?\]\((https?:\/\/[^)]+)\)/;
   const markdownMatch = content.match(imageUrlPattern);
   if (markdownMatch) return markdownMatch[1];
-  
+
+  // Try standard markdown link pattern (used by the GPT-4o API)
+  const markdownLinkPattern = /\[.*?\]\((https?:\/\/[^)]+)\)/;
+  const linkMatch = content.match(markdownLinkPattern);
+  if (linkMatch) return linkMatch[1];
+
   // If no markdown match, try to parse the response as JSON chunks
   try {
     // Look for image URLs in the data stream
     const imageUrlJsonPattern = /"image(?:_url|Url|URL)"\s*:\s*"(https?:\/\/[^"]+)"/;
     const jsonMatch = content.match(imageUrlJsonPattern);
     if (jsonMatch) return jsonMatch[1];
-    
+
+    // Improved URL pattern that includes query parameters
+    const urlPattern = /https?:\/\/\S+\.(?:png|jpe?g|gif|webp|bmp)(?:[?&]\S+)?/i;
+
     // Look for URLs in the streamed content
-    const urlPattern = /https?:\/\/\S+\.(?:png|jpe?g|gif|webp|bmp)/i;
     const urlMatch = content.match(urlPattern);
-    if (urlMatch) return urlMatch[0];
-    
+    if (urlMatch) {
+      // Make sure we get the full URL including query params
+      // First, get the base match
+      let fullUrl = urlMatch[0];
+
+      // If it ends with a quote or bracket, strip it
+      fullUrl = fullUrl.replace(/["'\)]$/, '');
+
+      // If URL contains query params, ensure we get the full URL
+      if (fullUrl.includes('?')) {
+        // Try to extract the complete URL up to a whitespace or closing character
+        const startIndex = content.indexOf(fullUrl);
+        const remainingContent = content.substring(startIndex);
+        const endIndex = remainingContent.search(/[\s"'\n\r)]/);
+
+        if (endIndex > 0) {
+          fullUrl = remainingContent.substring(0, endIndex);
+        }
+      }
+
+      return fullUrl;
+    }
+
     // Try to parse the data chunks if they contain the full response
     const dataChunks = content.split('\n\n').filter(chunk => chunk.startsWith('data: '));
     for (const chunk of dataChunks) {
       try {
         const jsonStr = chunk.substring(6); // Remove 'data: ' prefix
         const jsonData = JSON.parse(jsonStr);
-        
+
         // Check if the chunk contains choices with content that has URLs
         if (jsonData.choices && jsonData.choices[0]?.delta?.content) {
           const deltaContent = jsonData.choices[0].delta.content;
+
+          // Try markdown link in delta content
+          const linkInDelta = deltaContent.match(markdownLinkPattern);
+          if (linkInDelta) return linkInDelta[1];
+
+          // Try image markdown in delta content
+          const imageInDelta = deltaContent.match(imageUrlPattern);
+          if (imageInDelta) return imageInDelta[1];
+
+          // Try raw URL in delta content
           const contentUrlMatch = deltaContent.match(urlPattern);
-          if (contentUrlMatch) return contentUrlMatch[0];
+          if (contentUrlMatch) {
+            let fullUrl = contentUrlMatch[0];
+            fullUrl = fullUrl.replace(/["'\)]$/, '');
+            return fullUrl;
+          }
         }
       } catch (e) {
         // Ignore parsing errors for individual chunks
       }
     }
-    
+
     // If we're here, we couldn't find an image URL
     return null;
   } catch (e) {
@@ -170,13 +213,13 @@ export function extractFailureDetails(content: string): { reason: string; sugges
  */
 export function processStreamedResponse(streamResponse: string): string {
   let fullContent = '';
-  
+
   const dataChunks = streamResponse.split('\n\n').filter(chunk => chunk.startsWith('data: '));
   for (const chunk of dataChunks) {
     try {
       const jsonStr = chunk.substring(6); // Remove 'data: ' prefix
       const jsonData = JSON.parse(jsonStr);
-      
+
       // Extract content from delta if available
       if (jsonData.choices && jsonData.choices[0]?.delta?.content) {
         fullContent += jsonData.choices[0].delta.content;
@@ -185,6 +228,42 @@ export function processStreamedResponse(streamResponse: string): string {
       // Skip chunks that can't be parsed
     }
   }
-  
+
   return fullContent;
+}
+
+/**
+ * Extracts the highest progress percentage from a streamed response
+ * @param streamResponse - The streamed response content
+ * @returns The highest progress percentage found (0-100)
+ */
+export function extractProgressPercentage(streamResponse: string): number {
+  // Match all progress indicators in the format "Progress XX%"
+  const progressMatches = streamResponse.match(/Progress (\d+)%/g);
+
+  if (!progressMatches || progressMatches.length === 0) {
+    // Try matching the custom format from the raw response
+    const customFormatMatches = streamResponse.match(/Progress (\d+)/g);
+    if (!customFormatMatches || customFormatMatches.length === 0) {
+      return 0;
+    }
+
+    // Extract percentages from custom format matches
+    const percentages = customFormatMatches.map(match => {
+      const numberMatch = match.match(/Progress (\d+)/);
+      return numberMatch ? parseInt(numberMatch[1], 10) : 0;
+    });
+
+    // Return the highest percentage
+    return Math.max(...percentages);
+  }
+
+  // Extract percentages from standard format matches
+  const percentages = progressMatches.map(match => {
+    const numberMatch = match.match(/Progress (\d+)%/);
+    return numberMatch ? parseInt(numberMatch[1], 10) : 0;
+  });
+
+  // Return the highest percentage
+  return Math.max(...percentages);
 }
