@@ -232,38 +232,3 @@ export function processStreamedResponse(streamResponse: string): string {
   return fullContent;
 }
 
-/**
- * Extracts the highest progress percentage from a streamed response
- * @param streamResponse - The streamed response content
- * @returns The highest progress percentage found (0-100)
- */
-export function extractProgressPercentage(streamResponse: string): number {
-  // Match all progress indicators in the format "Progress XX%"
-  const progressMatches = streamResponse.match(/Progress (\d+)%/g);
-
-  if (!progressMatches || progressMatches.length === 0) {
-    // Try matching the custom format from the raw response
-    const customFormatMatches = streamResponse.match(/Progress (\d+)/g);
-    if (!customFormatMatches || customFormatMatches.length === 0) {
-      return 0;
-    }
-
-    // Extract percentages from custom format matches
-    const percentages = customFormatMatches.map(match => {
-      const numberMatch = match.match(/Progress (\d+)/);
-      return numberMatch ? parseInt(numberMatch[1], 10) : 0;
-    });
-
-    // Return the highest percentage
-    return Math.max(...percentages);
-  }
-
-  // Extract percentages from standard format matches
-  const percentages = progressMatches.map(match => {
-    const numberMatch = match.match(/Progress (\d+)%/);
-    return numberMatch ? parseInt(numberMatch[1], 10) : 0;
-  });
-
-  // Return the highest percentage
-  return Math.max(...percentages);
-}

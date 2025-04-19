@@ -10,8 +10,7 @@ import {
   extractImageUrlFromResponse, 
   isGenerationFailed, 
   extractFailureDetails,
-  processStreamedResponse,
-  extractProgressPercentage
+  processStreamedResponse
 } from '../shared/GenericFunctions';
 import { ASPECT_RATIO_OPTIONS, LORA_OPTIONS } from '../shared/Constants';
 
@@ -266,16 +265,11 @@ export class LLMImageToImage implements INodeType {
 				// Create a simplified response
 				let simplifiedResponse;
 				
-				// Extract progress information
-				const progressPercentage = extractProgressPercentage(rawStreamResponse);
-				
 				if (failed) {
 					const { reason, suggestion } = extractFailureDetails(processedContent);
 					simplifiedResponse = {
 						prompt,
 						status,
-						progress: progressPercentage,  // Add progress information
-						progress_display: `${progressPercentage}%`,  // Formatted for display
 						error: {
 							reason,
 							suggestion,
@@ -291,8 +285,6 @@ export class LLMImageToImage implements INodeType {
 						status,
 						source_image: imageUrl,
 						image_url: imageUrl || null,
-						progress: progressPercentage,  // Add progress information
-						progress_display: `${progressPercentage}%`,  // Formatted for display
 						processed_content: processedContent,
 						original_response: rawStreamResponse // Keep original response for reference
 					};
