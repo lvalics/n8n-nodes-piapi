@@ -6,8 +6,14 @@ import {
 	NodeConnectionType,
 } from 'n8n-workflow';
 
-import { llmApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
+import { 
+  extractImageUrlFromResponse, 
+  isGenerationFailed, 
+  extractFailureDetails,
+  processStreamedResponse
+} from '../shared/GenericFunctions';
 import { ASPECT_RATIO_OPTIONS, LORA_OPTIONS } from '../shared/Constants';
+
 
 // Helper function to generate prompt with aspect ratio
 function generatePromptWithAspectRatio(
@@ -163,13 +169,6 @@ export class LLMImageToImage implements INodeType {
 				default: 'none',
 				description: 'Style to apply to the generated image',
 			},
-			{
-				displayName: 'Wait for Completion',
-				name: 'waitForCompletion',
-				type: 'boolean',
-				default: false,
-				description: 'Wait for task to complete and return results',
-			},
 		],
 	};
 
@@ -181,7 +180,6 @@ export class LLMImageToImage implements INodeType {
 			const model = this.getNodeParameter('model', i) as string;
 			const prompt = this.getNodeParameter('prompt', i) as string;
 			const imageSource = this.getNodeParameter('imageSource', i) as string;
-			const waitForCompletion = this.getNodeParameter('waitForCompletion', i, true) as boolean;
 
 			let imageUrl = '';
 
@@ -232,17 +230,68 @@ export class LLMImageToImage implements INodeType {
 
 			try {
 				// Call the LLM API endpoint with Bearer token auth
-				const response = await llmApiRequest.call(this, body);
+				// For streaming responses, we need to get the raw response
+				const credentials = await this.getCredentials('piAPIApi');
+				
+				const options = {
+					method: 'POST' as 'POST',
+					body,
+					url: 'https://api.piapi.ai/v1/chat/completions',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${credentials.apiKey as string}`,
+					},
+					json: true,
+					returnFullResponse: true, // Get the full response including headers
+				};
 
-				let taskResult = response;
+				// Get the full response as text to process the stream
+				const response = await this.helpers.httpRequestWithAuthentication.call(
+					this,
+					'piAPIApi',
+					options,
+				);
 
-				// If we need to wait for completion, poll until the task is done
-				if (waitForCompletion && response.data?.task_id) {
-					taskResult = await waitForTaskCompletion.call(this, response.data.task_id);
+				// The response will be the raw streamed data
+				const rawStreamResponse = response.body;
+				
+				// Process the streamed response to get complete content
+				const processedContent = processStreamedResponse(rawStreamResponse);
+				
+				// Check if generation failed
+				const failed = isGenerationFailed(processedContent);
+				const status = failed ? 'failed' : 'completed';
+				
+				// Create a simplified response
+				let simplifiedResponse;
+				
+				if (failed) {
+					const { reason, suggestion } = extractFailureDetails(processedContent);
+					simplifiedResponse = {
+						prompt,
+						status,
+						error: {
+							reason,
+							suggestion,
+							full_message: processedContent,
+						},
+						original_response: rawStreamResponse // Keep original response for reference
+					};
+				} else {
+					// Extract the image URL from the processed content
+					const imageUrl = extractImageUrlFromResponse(rawStreamResponse);
+					simplifiedResponse = {
+						prompt,
+						status,
+						source_image: imageUrl,
+						image_url: imageUrl || null,
+						processed_content: processedContent,
+						original_response: rawStreamResponse // Keep original response for reference
+					};
 				}
 
 				returnData.push({
-					json: taskResult,
+					json: simplifiedResponse,
 				});
 			} catch (error) {
 				if (this.continueOnFail()) {

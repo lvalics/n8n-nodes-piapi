@@ -254,6 +254,11 @@ export class KlingImageToVideo implements INodeType {
                         name: 'V1.6',
                         value: '1.6',
                     },
+                    {
+                        name: 'V2.0 ($0.96 for 5s, $1.92 for 10s)',
+                        value: '2.0',
+                        description: 'Warning: Higher price - $0.96 per 5-second video and $1.92 per 10-second video',
+                    },
                 ],
                 default: '1.6',
                 description: 'Model version to use',
