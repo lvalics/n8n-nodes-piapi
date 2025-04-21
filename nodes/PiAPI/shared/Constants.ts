@@ -254,6 +254,114 @@ export const GHIBLI_STYLE_OPTIONS = [
     value: 'ghibli',
     description: 'Standard Studio Ghibli animation style',
   },
+  // Add SFW LoRA types
+  {
+    name: 'Flat Color Style',
+    value: 'flat-color',
+    description: 'Style without visible lineart, flat colors, little to no depth',
+  },
+  {
+    name: 'Rotation Effect',
+    value: 'rotation-effect',
+    description: 'Main character or object rotating 360 degrees',
+  },
+  {
+    name: 'Live Wallpaper',
+    value: 'live-wallpaper',
+    description: 'Style similar to live wallpaper',
+  },
+  {
+    name: 'Passionate Kissing',
+    value: 'passionate-kissing',
+    description: 'Characters kissing each other deeply',
+  },
+  {
+    name: 'Squish Effect',
+    value: 'squish-effect',
+    description: 'Squish effect animation',
+  },
+  {
+    name: 'Cakeify Effect',
+    value: 'cakeify-effect',
+    description: 'Making the main object cut as a cake',
+  },
+  {
+    name: 'SingularUnity MotionCraft',
+    value: 'singularunity-motioncraft',
+    description: 'Fluid panning shots and dynamic rotations of subjects',
+  },
+  {
+    name: 'Pixel Art',
+    value: 'pixel-art',
+    description: 'Pixel-art style animation',
+  },
+  {
+    name: 'Super Saiyan Effect',
+    value: 'super-saiyan-effect',
+    description: 'Super Saiyan transformations',
+  },
+  {
+    name: 'Inflate Effect',
+    value: 'inflate-effect',
+    description: 'Inflation animation effect',
+  },
+  {
+    name: 'Deflate Effect',
+    value: 'deflate-effect',
+    description: 'Deflation animation effect',
+  },
+  {
+    name: 'Crush Effect',
+    value: 'crush-effect',
+    description: 'Crushing animation effect',
+  },
+  {
+    name: 'Particalize Effect',
+    value: 'particalize-effect',
+    description: 'Particle disintegration animation effect',
+  },
+  
+  // Add NSFW LoRA types
+  {
+    name: '[NSFW] General',
+    value: 'nsfw-general',
+    description: 'General NSFW content',
+  },
+  {
+    name: '[NSFW] Bouncing Boobs',
+    value: 'nsfw-bouncing-boobs',
+    description: 'NSFW bouncing animation',
+  },
+  {
+    name: '[NSFW] Undress',
+    value: 'nsfw-undress',
+    description: 'NSFW undressing animation',
+  },
+  {
+    name: '[NSFW] POV Blowjob',
+    value: 'nsfw-pov-blowjob',
+    description: 'NSFW POV animation',
+  },
+  {
+    name: '[NSFW] POV Titfuck',
+    value: 'nsfw-pov-titfuck',
+    description: 'NSFW POV animation',
+  },
+  {
+    name: '[NSFW] POV Missionary',
+    value: 'nsfw-pov-missionary',
+    description: 'NSFW POV animation',
+  },
+  {
+    name: '[NSFW] POV Cowgirl',
+    value: 'nsfw-pov-cowgirl',
+    description: 'NSFW POV animation',
+  },
+  {
+    name: '[NSFW] POV Doggy',
+    value: 'nsfw-pov-doggy',
+    description: 'NSFW POV animation',
+  },
 ];
 
 export const WANX_MODELS = [

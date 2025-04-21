@@ -76,15 +76,46 @@ export class WanXTextToVideo implements INodeType {
 				description: 'Aspect ratio of the generated video',
 			},
 			{
-				displayName: 'Ghibli Style',
-				name: 'ghibliStyle',
-				type: 'options',
-				options: GHIBLI_STYLE_OPTIONS,
-				default: 'ghibli',
-				description: 'Studio Ghibli animation style to use',
+				displayName: 'Use LoRA',
+				name: 'useLoRA',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to use LoRA for style control',
 				displayOptions: {
 					show: {
 						model: ['txt2video-14b-lora'],
+					},
+				},
+			},
+			{
+				displayName: 'LoRA Type',
+				name: 'loraType',
+				type: 'options',
+				options: GHIBLI_STYLE_OPTIONS,
+				default: 'ghibli',
+				description: 'Style type to apply using LoRA',
+				displayOptions: {
+					show: {
+						model: ['txt2video-14b-lora'],
+						useLoRA: [true],
+					},
+				},
+			},
+			{
+				displayName: 'LoRA Strength',
+				name: 'loraStrength',
+				type: 'number',
+				typeOptions: {
+					minValue: 0,
+					maxValue: 1,
+					stepSize: 0.1,
+				},
+				default: 1,
+				description: 'Controls the intensity of LoRA influence (0.0-1.0)',
+				displayOptions: {
+					show: {
+						model: ['txt2video-14b-lora'],
+						useLoRA: [true],
 					},
 				},
 			},
@@ -120,10 +151,20 @@ export class WanXTextToVideo implements INodeType {
 				},
 			};
 
-			// Add lora_type for Ghibli style videos
+			// Add lora_settings for styled videos
 			if (model === 'txt2video-14b-lora') {
-				const ghibliStyle = this.getNodeParameter('ghibliStyle', i) as string;
-				body.input.lora_type = ghibliStyle;
+				const useLoRA = this.getNodeParameter('useLoRA', i, true) as boolean;
+				if (useLoRA) {
+					const loraType = this.getNodeParameter('loraType', i) as string;
+					const loraStrength = this.getNodeParameter('loraStrength', i, 1) as number;
+					
+					body.input.lora_settings = [
+						{
+							lora_type: loraType,
+							lora_strength: loraStrength,
+						},
+					];
+				}
 			}
 
 			try {

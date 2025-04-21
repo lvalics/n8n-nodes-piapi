@@ -7,7 +7,7 @@ import {
 } from 'n8n-workflow';
 
 import { piApiRequest, waitForTaskCompletion } from '../shared/GenericFunctions';
-import { WANX_MODELS } from '../shared/Constants';
+import { WANX_MODELS, GHIBLI_STYLE_OPTIONS } from '../shared/Constants';
 
 export class WanXImageToVideo implements INodeType {
 	description: INodeTypeDescription = {
@@ -54,31 +54,27 @@ export class WanXImageToVideo implements INodeType {
 				displayName: 'Model',
 				name: 'model',
 				type: 'options',
-				options: WANX_MODELS.filter(model => model.value === 'img2video-14b' || model.value === 'img2video-14b-keyframe'),
+				options: WANX_MODELS.filter(model => 
+					model.value === 'img2video-14b' || 
+					model.value === 'img2video-14b-keyframe' ||
+					model.value === 'img2video-14b-lora'
+				),
 				default: 'img2video-14b',
 				description: 'The WanX model to use for image-to-video generation',
 			},
 			{
-				displayName: 'Image Source',
-				name: 'imageSource',
-				type: 'options',
-				options: [
-					{
-						name: 'URL',
-						value: 'url',
-					},
-					{
-						name: 'Binary Data',
-						value: 'binaryData',
-					},
-				],
-				default: 'url',
-				description: 'The source of the input image',
+				displayName: 'Image URL',
+				name: 'imageUrl',
+				type: 'string',
+				default: '',
+				required: true,
 				displayOptions: {
 					show: {
-						model: ['img2video-14b'],
+						imageSource: ['url'],
+						model: ['img2video-14b', 'img2video-14b-lora'],
 					},
 				},
+				description: 'Direct URL to the image (must be a publicly accessible image file)',
 			},
 			{
 				displayName: 'First Frame Source',
@@ -125,18 +121,18 @@ export class WanXImageToVideo implements INodeType {
 				},
 			},
 			{
-				displayName: 'Image URL',
-				name: 'imageUrl',
+				displayName: 'Binary Property',
+				name: 'binaryPropertyName',
 				type: 'string',
-				default: '',
+				default: 'data',
 				required: true,
 				displayOptions: {
 					show: {
-						imageSource: ['url'],
-						model: ['img2video-14b'],
+						imageSource: ['binaryData'],
+						model: ['img2video-14b', 'img2video-14b-lora'],
 					},
 				},
-				description: 'Direct URL to the image (must be a publicly accessible image file)',
+				description: 'Name of the binary property containing the image data',
 			},
 			{
 				displayName: 'First Frame URL',
@@ -165,20 +161,6 @@ export class WanXImageToVideo implements INodeType {
 					},
 				},
 				description: 'Direct URL to the last frame image (must be a publicly accessible image file)',
-			},
-			{
-				displayName: 'Binary Property',
-				name: 'binaryPropertyName',
-				type: 'string',
-				default: 'data',
-				required: true,
-				displayOptions: {
-					show: {
-						imageSource: ['binaryData'],
-						model: ['img2video-14b'],
-					},
-				},
-				description: 'Name of the binary property containing the image data',
 			},
 			{
 				displayName: 'First Frame Binary Property',
@@ -226,6 +208,72 @@ export class WanXImageToVideo implements INodeType {
 				description: 'Aspect ratio of the generated video',
 			},
 			{
+				displayName: 'Use LoRA',
+				name: 'useLoRA',
+				type: 'boolean',
+				default: true,
+				description: 'Whether to use LoRA for style control',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b-lora'],
+					},
+				},
+			},
+			{
+				displayName: 'LoRA Type',
+				name: 'loraType',
+				type: 'options',
+				options: GHIBLI_STYLE_OPTIONS,
+				default: 'ghibli',
+				description: 'Style type to apply using LoRA',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b-lora'],
+						useLoRA: [true],
+					},
+				},
+			},
+			{
+				displayName: 'LoRA Strength',
+				name: 'loraStrength',
+				type: 'number',
+				typeOptions: {
+					minValue: 0,
+					maxValue: 1,
+					stepSize: 0.1,
+				},
+				default: 1,
+				description: 'Controls the intensity of LoRA influence (0.0-1.0)',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b-lora'],
+						useLoRA: [true],
+					},
+				},
+			},
+			{
+				displayName: 'Image Source',
+				name: 'imageSource',
+				type: 'options',
+				options: [
+					{
+						name: 'URL',
+						value: 'url',
+					},
+					{
+						name: 'Binary Data',
+						value: 'binaryData',
+					},
+				],
+				default: 'url',
+				description: 'The source of the input image',
+				displayOptions: {
+					show: {
+						model: ['img2video-14b', 'img2video-14b-lora'],
+					},
+				},
+			},
+			{
 				displayName: 'Wait for Completion',
 				name: 'waitForCompletion',
 				type: 'boolean',
@@ -256,6 +304,10 @@ export class WanXImageToVideo implements INodeType {
 					image?: string,
 					first_frame?: string,
 					last_frame?: string,
+					lora_settings?: Array<{
+						lora_type: string,
+						lora_strength: number
+					}>,
 				},
 			};
 
@@ -271,7 +323,7 @@ export class WanXImageToVideo implements INodeType {
 				},
 			};
 
-			if (model === 'img2video-14b') {
+			if (model === 'img2video-14b' || model === 'img2video-14b-lora') {
 				// Standard image to video flow
 				const imageSource = this.getNodeParameter('imageSource', i) as string;
 				let imageBase64 = '';
@@ -333,6 +385,22 @@ export class WanXImageToVideo implements INodeType {
 
 				// Add the single image to the input parameters
 				body.input.image = imageBase64;
+			}
+			
+			// Add lora_settings for styled videos
+			if (model === 'img2video-14b-lora') {
+				const useLoRA = this.getNodeParameter('useLoRA', i, true) as boolean;
+				if (useLoRA) {
+					const loraType = this.getNodeParameter('loraType', i) as string;
+					const loraStrength = this.getNodeParameter('loraStrength', i, 1) as number;
+					
+					body.input.lora_settings = [
+						{
+							lora_type: loraType,
+							lora_strength: loraStrength,
+						},
+					];
+				}
 			} else if (model === 'img2video-14b-keyframe') {
 				// Keyframe mode - need first and last frame
 				const firstFrameSource = this.getNodeParameter('firstFrameSource', i) as string;
