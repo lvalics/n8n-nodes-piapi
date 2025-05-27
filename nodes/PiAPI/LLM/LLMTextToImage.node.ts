@@ -22,7 +22,7 @@ export class LLMTextToImage implements INodeType {
 		icon: 'file:../piapi.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Generate images using PiAPI GPT-4o Image Generation',
+		description: 'Generate images using PiAPI GPT-4o Image Generation API',
 		defaults: {
 			name: 'GPT-4o Text to Image',
 		},
@@ -41,11 +41,15 @@ export class LLMTextToImage implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'GPT-4o Image Preview',
+						name: 'GPT-4o Image',
+						value: 'gpt-4o-image',
+					},
+					{
+						name: 'GPT-4o Image Preview (Legacy)',
 						value: 'gpt-4o-image-preview',
 					},
 				],
-				default: 'gpt-4o-image-preview',
+				default: 'gpt-4o-image', // Set the new model as default
 				description: 'The model to use for image generation',
 			},
 			{
@@ -117,10 +121,15 @@ export class LLMTextToImage implements INodeType {
 				messages: [
 					{
 						role: 'user',
-						content: prompt,
+						content: model === 'gpt-4o-image' ? [
+							{
+								type: 'text',
+								text: prompt,
+							}
+						] : prompt,
 					},
 				],
-				stream: true, // GPT-4o image preview requires stream mode
+				stream: true, // GPT-4o image generation requires stream mode
 			};
 
 			// Get image style if specified

@@ -1,60 +1,116 @@
-> **Currently in BETA and under active development.**
-
 # n8n-nodes-piapi
 
-This n8n community node enables seamless integration of **[PiAPI](https://piapi.ai/workspace?via=valics) in your [n8n](https://n8n.io) workflows**.
+This is a **community-maintained** n8n node package that enables seamless integration with [PiAPI](https://piapi.ai/workspace?via=valics) - a centralized hub for generative AI APIs. This package allows you to leverage advanced AI capabilities directly in your n8n workflows.
+
+> **Note**: This is an unofficial community project and is not developed or maintained by the PiAPI team.
+
+## About PiAPI
+
+PiAPI provides easy access to cutting-edge generative AI APIs for:
+- Image generation (Midjourney, Flux)
+- Video generation (Luma Dream Machine, Kling, Hailuo, WanX, Hunyuan)
+- Music and audio generation
+- Face swapping
+- 3D model generation
+- Large Language Models
+- And much more!
 
 ## Features
 
-- Image to Video
-- Text to Video
-- Director Mode (camera control)
-- Video Extension
-- Video Effects
-- Text to Image
-- Image to Image
-- Virtual Try-on
-- Face swapping (single face and multi-face with precise index-based control)
-- Lip sync
-- Sound Creation
-- Text to 3D
-- Image to 3D
-- Image/Video Upscale
-- Remove Background
-- Segment
-- GPT-4o Image Generation
-- Temporarely store files
+This n8n package includes nodes for:
 
-## GPT-4o Image Generation
+### 🎨 Image Generation & Manipulation
+- **Flux** - Text to Image, Image to Image
+- **Midjourney** - Advanced image generation
+- **LLM (GPT-4o)** - Text to Image, Image to Image with natural language
+- **Image Upscale** - Enhance image resolution
+- **Remove Background** - Automatic background removal
+- **Qubico Segment** - Advanced image segmentation
 
-The new GPT-4o integration allows for:
-- Advanced text-to-image generation with superior text rendering
-- Image-to-image editing with natural language instructions
+### 🎬 Video Generation & Editing
+- **Dream Machine** - Text to Video, Image to Video, Video Extension
+- **Kling** - Text to Video, Image to Video, Video Extension, Lip Sync, Effects, Virtual Try-On
+- **Hailuo** - Text to Video, Image to Video, Subject Video (with Director Mode camera controls)
+- **WanX** - Text to Video, Image to Video
+- **Hunyuan** - Text to Video, Image to Video
+- **Skyreels** - Image to Video
+- **Video Upscale** - Enhance video resolution
 
-## Director Mode
+### 🎵 Audio Generation
+- **MMAudio** - Video to Audio generation
+- **DiffRhythm** - Audio generation
+- **Text to Speech** - Convert text to natural speech
 
-The Director Mode (available in Hailuo nodes) allows:
-- Camera movement control in video generation
-- Use bracket syntax like `[Push in,Pedestal up]walking man` in your prompts
-- Supports movements such as Pan, Tilt, Truck, Push, Pedestal, Zoom, Shake and Static shot
-- Available in both text-to-video and image-to-video nodes
+### 🎭 Face & Character
+- **Faceswap** - Image to Image, Video to Video (single and multi-face with index control)
+- **Kling Lip Sync** - Synchronize lip movements
+- **Kling Try-On** - Virtual clothing try-on
+
+### 🎲 3D Generation
+- **Trellis** - 3D model generation
+
+### 🔧 Utilities
+- **Task Status** - Check status of async operations
+- **File Upload** - Temporary file storage
 
 ## Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
-## More information
-
-Description of the node will go here.
+### Quick Install
+```bash
+# In n8n
+# Go to Settings > Community Nodes
+# Install: n8n-nodes-piapi
+```
 
 ## Credentials
 
-You will need an API key from piapi.ai to use this node. Add the API key to the credentials section in the settings of the node.
+You'll need an API key from [PiAPI](https://piapi.ai/workspace?via=valics):
+1. Sign up at [piapi.ai](https://piapi.ai/workspace?via=valics)
+2. Get your API key from the dashboard
+3. Add the API key to the PiAPI credentials in n8n
+
+## Usage
+
+1. Add any PiAPI node to your workflow
+2. Configure your PiAPI credentials
+3. Select the operation you want to perform
+4. Configure the node parameters
+5. Execute your workflow
+
+### Example: Text to Image with Flux
+1. Add a "Flux Text to Image" node
+2. Enter your prompt
+3. Select model and parameters
+4. Execute to generate your image
+
+### Example: Director Mode with Hailuo
+Use camera controls in your prompts:
+```
+[Push in, Pan right] A majestic eagle soaring through clouds
+[Zoom out, Tilt up] City skyline at sunset
+```
 
 ## Compatibility
 
-1.80.0 and above
+- n8n version: 1.80.0 and above
+- Node.js: 18.10 or higher
+
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/lvalics/n8n-nodes-piapi/issues)
+- **PiAPI Documentation**: [PiAPI Docs](https://piapi.ai/docs)
+- **n8n Community**: [n8n Community Forum](https://community.n8n.io)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-[MIT](https://github.com/n8n-io/n8n-nodes-piapi/blob/master/LICENSE.md)
+[MIT](https://github.com/lvalics/n8n-nodes-piapi/blob/master/LICENSE.md)
+
+## Disclaimer
+
+This is an unofficial community node package and is not affiliated with, officially maintained, or endorsed by PiAPI. Use at your own discretion.

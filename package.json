@@ -1,17 +1,42 @@
 {
   "name": "n8n-nodes-piapi",
-  "version": "0.2.5",
-  "description": "PiAPI workflow nodes",
+  "version": "1.0.1",
+  "description": "Community n8n nodes for PiAPI - integrate generative AI capabilities (image, video, audio, 3D) into your workflows",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
     "piapi",
+    "ai",
+    "artificial intelligence",
+    "generative ai",
+    "image generation",
+    "video generation",
+    "flux",
+    "midjourney",
+    "dream machine",
+    "kling",
+    "hailuo",
+    "hunyuan",
+    "wanx",
+    "text to image",
     "image to image",
-    "image to text",
-    "try on",
     "text to video",
     "image to video",
-    "lip sync"
+    "face swap",
+    "faceswap",
+    "lip sync",
+    "lipsync",
+    "virtual try on",
+    "background removal",
+    "image upscale",
+    "video upscale",
+    "3d generation",
+    "trellis",
+    "text to speech",
+    "tts",
+    "audio generation",
+    "gpt-4o",
+    "llm"
   ],
   "license": "MIT",
   "homepage": "https://piapi.ai/workspace?via=valics",
@@ -96,14 +121,8 @@
     "prettier": "^3.5.3",
     "typescript": "~5.8.2"
   },
-  "dependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
-    "axios": "^1.8.3"
-  },
+  "dependencies": {},
   "pnpm": {
-    "overrides": {
-    "axios": "1.8.3"
-    },
     "ignoredBuiltDependencies": [
       "eslint-plugin-n8n-nodes-base"
     ],

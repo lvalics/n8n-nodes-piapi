@@ -5,6 +5,7 @@ import {
 	IDataObject,
 	NodeApiError,
 	JsonObject,
+	sleep,
 } from 'n8n-workflow';
 
 export async function piApiRequest(
@@ -86,7 +87,7 @@ export async function waitForTaskCompletion(
 		}
 
 		// Wait before trying again
-		await new Promise(resolve => setTimeout(resolve, retryInterval));
+		await sleep(retryInterval);
 		retries++;
 	}
 

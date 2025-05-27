@@ -49,7 +49,7 @@ export class LLMImageToImage implements INodeType {
 		icon: 'file:../piapi.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Transform images using PiAPI GPT-4o Image Generation',
+		description: 'Transform images using PiAPI GPT-4o Image Generation API',
 		defaults: {
 			name: 'GPT-4o Image to Image',
 		},
@@ -68,11 +68,15 @@ export class LLMImageToImage implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'GPT-4o Image Preview',
+						name: 'GPT-4o Image',
+						value: 'gpt-4o-image',
+					},
+					{
+						name: 'GPT-4o Image Preview (Legacy)',
 						value: 'gpt-4o-image-preview',
 					},
 				],
-				default: 'gpt-4o-image-preview',
+				default: 'gpt-4o-image', // Set the new model as default
 				description: 'The model to use for image transformation',
 			},
 			{
@@ -91,6 +95,36 @@ export class LLMImageToImage implements INodeType {
 				],
 				default: 'url',
 				description: 'The source of the input image',
+			},
+			{
+				displayName: 'Multiple Images Input',
+				name: 'multipleImages',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to use multiple images as input (only supported by GPT-4o Image)',
+				displayOptions: {
+					show: {
+						imageSource: ['url'],
+						model: ['gpt-4o-image'],
+					},
+				},
+			},
+			{
+				displayName: 'Additional Image URLs',
+				name: 'additionalImageUrls',
+				type: 'string',
+				typeOptions: {
+					multipleValues: true,
+				},
+				default: [],
+				description: 'Additional image URLs to include in the request',
+				displayOptions: {
+					show: {
+						imageSource: ['url'],
+						multipleImages: [true],
+						model: ['gpt-4o-image'],
+					},
+				},
 			},
 			{
 				displayName: 'Image URL',
@@ -181,10 +215,22 @@ export class LLMImageToImage implements INodeType {
 			const prompt = this.getNodeParameter('prompt', i) as string;
 			const imageSource = this.getNodeParameter('imageSource', i) as string;
 
-			let imageUrl = '';
-
+			// Setup image URLs
+			let imageUrls: string[] = [];
+			
 			if (imageSource === 'url') {
-				imageUrl = this.getNodeParameter('imageUrl', i) as string;
+				const mainImageUrl = this.getNodeParameter('imageUrl', i) as string;
+				imageUrls.push(mainImageUrl);
+				
+				// Check for multiple images if using gpt-4o-image
+				if (model === 'gpt-4o-image') {
+					const useMultipleImages = this.getNodeParameter('multipleImages', i, false) as boolean;
+					
+					if (useMultipleImages) {
+						const additionalUrls = this.getNodeParameter('additionalImageUrls', i, []) as string[];
+						imageUrls = imageUrls.concat(additionalUrls);
+					}
+				}
 			} else {
 				// Binary data
 				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
@@ -197,35 +243,42 @@ export class LLMImageToImage implements INodeType {
 				// Use binary data URL or convert to base64
 				if (binaryData.data) {
 					const dataBuffer = Buffer.from(binaryData.data, 'base64');
-					imageUrl = `data:${binaryData.mimeType};base64,${dataBuffer.toString('base64')}`;
+					imageUrls.push(`data:${binaryData.mimeType};base64,${dataBuffer.toString('base64')}`);
 				} else if (binaryData.url) {
-					imageUrl = binaryData.url as string;
+					imageUrls.push(binaryData.url as string);
 				} else {
 					throw new Error('No usable image data found in the provided binary property');
 				}
 			}
 
 			// GPT-4o requires messages in chat format with image in content
+			const messageContent = [];
+			
+			// Add all image URLs to the content
+			for (const url of imageUrls) {
+				messageContent.push({
+					type: 'image_url',
+					image_url: {
+						url: url,
+					},
+				});
+			}
+			
+			// Add the text prompt
+			messageContent.push({
+				type: 'text',
+				text: generatePromptWithAspectRatio(this, i, prompt),
+			});
+			
 			const body = {
 				model,
 				messages: [
 					{
 						role: 'user',
-						content: [
-							{
-								type: 'image_url',
-								image_url: {
-									url: imageUrl,
-								},
-							},
-							{
-								type: 'text',
-								text: generatePromptWithAspectRatio(this, i, prompt),
-							},
-						],
+						content: messageContent,
 					},
 				],
-				stream: true, // GPT-4o image preview requires stream mode
+				stream: true, // GPT-4o image generation requires stream mode
 			};
 
 			try {
