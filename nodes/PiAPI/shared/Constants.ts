@@ -396,3 +396,39 @@ export const WANX_MODELS = [
     price: 0.28,
   },
 ];
+
+export const UDIO_LYRICS_TYPES = [
+  {
+    name: 'Generate',
+    value: 'generate',
+    description: 'Generate lyrics based on description',
+  },
+  {
+    name: 'Instrumental',
+    value: 'instrumental',
+    description: 'Create instrumental music without lyrics',
+  },
+  {
+    name: 'User Provided',
+    value: 'user',
+    description: 'Use custom lyrics provided by user',
+  },
+];
+
+export const UDIO_SERVICE_MODES = [
+  {
+    name: 'Default (User Workspace Setting)',
+    value: '',
+    description: 'Use the default service mode from your workspace settings',
+  },
+  {
+    name: 'Pay-as-you-go (PAYG)',
+    value: 'public',
+    description: 'Process this task under PAYG mode',
+  },
+  {
+    name: 'Host-your-account (HYA)',
+    value: 'private',
+    description: 'Process this task under HYA mode',
+  },
+];

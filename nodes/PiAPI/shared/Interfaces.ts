@@ -318,3 +318,115 @@ export interface FileUploadParams {
     file_name: string;
     file_data: string; // Base64 encoded file data
 }
+
+export interface UdioGenerateMusicParams {
+    model: string;
+    task_type: string;
+    input: {
+        gpt_description_prompt?: string;
+        lyrics?: string;
+        negative_tags?: string;
+        lyrics_type: 'generate' | 'user' | 'instrumental';
+        seed?: number;
+        continue_song_id?: string;
+        continue_at?: number;
+    };
+    config: {
+        service_mode?: string;
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
+
+export interface UdioGenerateLyricsParams {
+    model: string;
+    task_type: string;
+    input: {
+        prompt: string;
+    };
+    config: {
+        service_mode?: string;
+        webhook_config?: {
+            endpoint?: string;
+            secret?: string;
+        };
+    };
+}
+
+export interface UdioTaskResponse {
+    code: number;
+    data: {
+        task_id: string;
+        model: string;
+        task_type: string;
+        status: string;
+        input: IDataObject;
+        output: {
+            clips?: {
+                [key: string]: {
+                    id?: string;
+                    video_url?: string;
+                    audio_url?: string;
+                    image_url?: string;
+                    image_large_url?: string;
+                    is_video_pending?: boolean;
+                    major_model_version?: string;
+                    model_name?: string;
+                    metadata?: {
+                        tags?: string;
+                        prompt?: string;
+                        gpt_description_prompt?: string;
+                        audio_prompt_id?: string;
+                        history?: any;
+                        concat_history?: any;
+                        type?: string;
+                        duration?: number;
+                        refund_credits?: boolean;
+                        stream?: boolean;
+                        error_type?: string;
+                        error_message?: string;
+                    };
+                    is_liked?: boolean;
+                    user_id?: string;
+                    display_name?: string;
+                    handle?: string;
+                    is_handle_updated?: boolean;
+                    is_trashed?: boolean;
+                    reaction?: any;
+                    created_at?: string;
+                    status?: string;
+                    title?: string;
+                    play_count?: number;
+                    upvote_count?: number;
+                    is_public?: boolean;
+                };
+            };
+            lyrics_pairs?: Array<{
+                title: string;
+                text: string;
+            }>;
+        };
+        meta: {
+            created_at?: string;
+            started_at?: string;
+            ended_at?: string;
+            usage?: {
+                type: string;
+                frozen: number;
+                consume: number;
+            };
+            is_using_private_pool?: boolean;
+        };
+        detail: any;
+        logs: any[];
+        error: {
+            code: number;
+            raw_message?: string;
+            message: string;
+            detail?: any;
+        };
+    };
+    message: string;
+}
