@@ -124,7 +124,16 @@ export class KlingTextToVideo implements INodeType {
                     {
                         name: 'V2.0 ($0.96 for 5s, $1.92 for 10s)',
                         value: '2.0',
-                        description: 'Warning: Higher price - $0.96 per 5-second video and $1.92 per 10-second video',
+                        description: 'Warning: Higher price',
+                    },
+										{
+                        name: 'V2.1',
+                        value: '2.1',
+                    },
+                    {
+                        name: 'V2.1 Master',
+                        value: '2.1-master',
+                        description: 'Warning: Higher price',
                     },
                 ],
                 default: '1.6',

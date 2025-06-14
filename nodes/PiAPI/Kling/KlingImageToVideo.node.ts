@@ -257,7 +257,16 @@ export class KlingImageToVideo implements INodeType {
                     {
                         name: 'V2.0 ($0.96 for 5s, $1.92 for 10s)',
                         value: '2.0',
-                        description: 'Warning: Higher price - $0.96 per 5-second video and $1.92 per 10-second video',
+                        description: 'Warning: Higher price',
+                    },
+										{
+                        name: 'V2.1',
+                        value: '2.1',
+                    },
+                    {
+                        name: 'V2.1 Master',
+                        value: '2.1-master',
+                        description: 'Warning: Higher price',
                     },
                 ],
                 default: '1.6',
@@ -310,7 +319,7 @@ export class KlingImageToVideo implements INodeType {
                 // Get the main image
                 if (imageSource === 'url') {
                     imageUrl = this.getNodeParameter('imageUrl', i) as string;
-                    
+
                     // Validate URL
                     try {
                         new URL(imageUrl);
@@ -323,13 +332,13 @@ export class KlingImageToVideo implements INodeType {
                     if (!binaryItem) {
                         throw new Error(`No binary data found in property ${binaryPropertyName}`);
                     }
-                    
+
                     // Add await here to properly resolve the Promise
                     const binaryData = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
                     if (!binaryData) {
                         throw new Error(`No binary data found in property ${binaryPropertyName}`);
                     }
-                    
+
                     const binaryMimeType = binaryItem.mimeType || 'image/png';
                     imageUrl = `data:${binaryMimeType};base64,${binaryData.toString('base64')}`;
                 }
@@ -337,7 +346,7 @@ export class KlingImageToVideo implements INodeType {
                 // Get the end frame image if needed
                 if (endFrameImageSource === 'url') {
                     endFrameImageUrl = this.getNodeParameter('endFrameImageUrl', i) as string;
-                    
+
                     // Validate URL
                     try {
                         new URL(endFrameImageUrl);
@@ -350,12 +359,12 @@ export class KlingImageToVideo implements INodeType {
                     if (!binaryItem) {
                         throw new Error(`No binary data found in property ${endFrameBinaryPropertyName}`);
                     }
-                    
+
                     const binaryData = await this.helpers.getBinaryDataBuffer(i, endFrameBinaryPropertyName);
                     if (!binaryData) {
                         throw new Error(`No binary data found in property ${endFrameBinaryPropertyName}`);
                     }
-                    
+
                     const binaryMimeType = binaryItem.mimeType || 'image/png';
                     endFrameImageUrl = `data:${binaryMimeType};base64,${binaryData.toString('base64')}`;
                 }
@@ -365,13 +374,13 @@ export class KlingImageToVideo implements INodeType {
                     const elementsList = this.getNodeParameter('elements.elementsList', i, []) as Array<{
                         elementImageUrl: string;
                     }>;
-                    
+
                     if (elementsList.length === 0) {
                         throw new Error('Elements feature requires at least one element image');
                     } else if (elementsList.length > 4) {
                         throw new Error('Elements feature supports a maximum of 4 element images');
                     }
-                    
+
                     elements = elementsList.map(element => ({
                         image_url: element.elementImageUrl,
                     }));
@@ -401,7 +410,7 @@ export class KlingImageToVideo implements INodeType {
                 // Add image_url if not using elements
                 if (!useElements) {
                     body.input.image_url = imageUrl;
-                    
+
                     // Add image_tail_url if end frame is specified
                     if (endFrameImageSource !== 'none' && endFrameImageUrl) {
                         body.input.image_tail_url = endFrameImageUrl;
