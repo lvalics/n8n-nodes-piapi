@@ -57,6 +57,11 @@ export class HailuoImageToVideo implements INodeType {
                         value: 'i2v-01-director',
                         description: 'Image-to-video with camera movement control. Use [Pan left], [Push in], etc. in your prompt',
                     },
+                    {
+                        name: 'Image to Video v2 (i2v-02)',
+                        value: 'i2v-02',
+                        description: 'Advanced image-to-video model with duration and resolution options ($0.25-$0.80)',
+                    },
                 ],
                 default: 'i2v-01',
                 description: 'The model to use for image-to-video generation',
@@ -99,6 +104,54 @@ export class HailuoImageToVideo implements INodeType {
                 type: 'boolean',
                 default: false,
                 description: 'Whether to expand the input prompt to add details',
+            },
+            {
+                displayName: 'Duration (seconds)',
+                name: 'duration',
+                type: 'options',
+                displayOptions: {
+                    show: {
+                        model: ['i2v-02'],
+                    },
+                },
+                options: [
+                    {
+                        name: '6 seconds',
+                        value: 6,
+                        description: 'Generate a 6-second video',
+                    },
+                    {
+                        name: '10 seconds',
+                        value: 10,
+                        description: 'Generate a 10-second video (not available with 1080p)',
+                    },
+                ],
+                default: 6,
+                description: 'Duration of the generated video',
+            },
+            {
+                displayName: 'Resolution',
+                name: 'resolution',
+                type: 'options',
+                displayOptions: {
+                    show: {
+                        model: ['i2v-02'],
+                    },
+                },
+                options: [
+                    {
+                        name: '768p',
+                        value: 768,
+                        description: 'Generate video at 768p resolution',
+                    },
+                    {
+                        name: '1080p',
+                        value: 1080,
+                        description: 'Generate video at 1080p resolution (not available with 10s duration)',
+                    },
+                ],
+                default: 768,
+                description: 'Resolution of the generated video',
             },
             {
                 displayName: 'Wait for Completion',
@@ -162,6 +215,20 @@ export class HailuoImageToVideo implements INodeType {
 
                 if (expandPrompt) {
                     parameters.expand_prompt = expandPrompt;
+                }
+
+                // Add duration and resolution for i2v-02 model
+                if (model === 'i2v-02') {
+                    const duration = this.getNodeParameter('duration', i) as number;
+                    const resolution = this.getNodeParameter('resolution', i) as number;
+                    
+                    // Validate that 1080p+10s combination is not selected
+                    if (resolution === 1080 && duration === 10) {
+                        throw new Error('1080p resolution with 10 seconds duration is not supported. Please choose either 768p resolution or 6 seconds duration.');
+                    }
+                    
+                    parameters.duration = duration;
+                    parameters.resolution = resolution;
                 }
 
                 // Make API request
