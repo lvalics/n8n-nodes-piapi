@@ -48,12 +48,17 @@ export class HailuoTextToVideo implements INodeType {
                     {
                         name: 'Text to Video (t2v-01)',
                         value: 't2v-01',
-                        description: 'Standard text-to-video model',
+                        description: 'Standard text-to-video model ($0.20)',
                     },
                     {
                         name: 'Text to Video Director (t2v-01-director)',
                         value: 't2v-01-director',
-                        description: 'Text-to-video with camera movement control. Use [Pan left], [Push in], etc. in your prompt',
+                        description: 'Text-to-video with camera movement control. Use [Pan left], [Push in], etc. in your prompt ($0.20)',
+                    },
+                    {
+                        name: 'Text to Video v2 (t2v-02)',
+                        value: 't2v-02',
+                        description: 'Advanced text-to-video model with duration and resolution options ($0.25-$0.80)',
                     },
                 ],
                 default: 't2v-01',
@@ -65,6 +70,54 @@ export class HailuoTextToVideo implements INodeType {
                 type: 'boolean',
                 default: false,
                 description: 'Whether to expand the input prompt to add details',
+            },
+            {
+                displayName: 'Duration (seconds)',
+                name: 'duration',
+                type: 'options',
+                displayOptions: {
+                    show: {
+                        model: ['t2v-02'],
+                    },
+                },
+                options: [
+                    {
+                        name: '6 seconds',
+                        value: 6,
+                        description: 'Generate a 6-second video',
+                    },
+                    {
+                        name: '10 seconds',
+                        value: 10,
+                        description: 'Generate a 10-second video (not available with 1080p)',
+                    },
+                ],
+                default: 6,
+                description: 'Duration of the generated video',
+            },
+            {
+                displayName: 'Resolution',
+                name: 'resolution',
+                type: 'options',
+                displayOptions: {
+                    show: {
+                        model: ['t2v-02'],
+                    },
+                },
+                options: [
+                    {
+                        name: '768p',
+                        value: 768,
+                        description: 'Generate video at 768p resolution',
+                    },
+                    {
+                        name: '1080p',
+                        value: 1080,
+                        description: 'Generate video at 1080p resolution (not available with 10s duration)',
+                    },
+                ],
+                default: 768,
+                description: 'Resolution of the generated video',
             },
             {
                 displayName: 'Wait for Completion',
@@ -120,6 +173,20 @@ export class HailuoTextToVideo implements INodeType {
                     model,
                     expand_prompt: expandPrompt,
                 };
+
+                // Add duration and resolution for t2v-02 model
+                if (model === 't2v-02') {
+                    const duration = this.getNodeParameter('duration', i) as number;
+                    const resolution = this.getNodeParameter('resolution', i) as number;
+                    
+                    // Validate that 1080p+10s combination is not selected
+                    if (resolution === 1080 && duration === 10) {
+                        throw new Error('1080p resolution with 10 seconds duration is not supported. Please choose either 768p resolution or 6 seconds duration.');
+                    }
+                    
+                    parameters.duration = duration;
+                    parameters.resolution = resolution;
+                }
 
                 // Make API request
                 const response = await piApiRequest.call(

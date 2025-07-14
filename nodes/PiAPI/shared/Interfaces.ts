@@ -77,7 +77,9 @@ export interface KlingTryOnParams {
 export interface HailuoBaseParams {
     prompt?: string;
     expand_prompt?: boolean;
-    model: string; // t2v-01, i2v-01, s2v-01, t2v-01-director, i2v-01-director, i2v-01-live
+    model: string; // t2v-01, i2v-01, s2v-01, t2v-01-director, i2v-01-director, i2v-01-live, t2v-02, i2v-02
+    duration?: number; // 6 or 10 (for v2 models)
+    resolution?: number; // 768 or 1080 (for v2 models)
 }
 
 export interface HailuoTextToVideoParams extends HailuoBaseParams {
